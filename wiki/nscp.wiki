@@ -1,0 +1,60 @@
+#summary Control Port
+
+=Introduction=
+OLserver includes a control port interface that can be enabled with the nscp module. This control port interface allows you to telnet to a specified host and port where you can administer the server and execute database commands while the server is running.
+The control port interface is a Tcl interface. Within it, you can execute any Tcl command that Tcl libraries and ADP can; the only exceptions being the ns_conn commands.
+To administer a server with the control port interface while it is running, the nscp module must be loaded into the server. To set permissions for the server, the nsperm module must also be loaded. To execute database commands while the server is running, you must also configure database services for the server, including database drivers and pools.
+
+=Configuration=
+An example configuration for the control port interface is shown below. Three sections of the configuration file are included. The nscp module is loaded into the /modules section for servername. The /module/nscp section defines the control port parameters, and the /module/nscp/users section defines the users who can log into the control port.
+{{{
+    # For security, use 127.0.0.1 only.
+    #
+    ns_section "ns/server/$server/module/nscp"
+        ns_param port 9999
+        ns_param address 127.0.0.1
+
+    # The user param is "$user:$pwd".
+    # $pwd is encryted using ns_crypt.
+    # sample user="nsadmin", pw="x".
+    #
+    ns_section "ns/server/$server/module/nscp/users"
+        ns_param user "nsadmin:t2GqvvaiIUbF2:"
+
+    ns_section "ns/server/${servername}/modules"
+        ns_param nscp nscp.so
+}}}
+
+==Usage==
+{{{
+    [neon:~] Michael% telnet 127.0.0.1 9999
+    Trying 127.0.0.1...
+    Connected to localhost.
+    Escape character is '^]'.
+    login:nsadmin
+    Password:x
+
+    Welcome to tool running at /usr/local/aolserver/bin/nsd (pid 7884)
+    AOLserver/4.5.0 (aolserver4_5) for osx built on Jan  4 2007 at 17:11:28
+    CVS Tag: $Name:  $
+    server1:nscp 1> ns_time
+    1168308907
+    server1:nscp 2> join [lsort [info commands ns_*time*]] \n
+    ns_buildsqltime
+    ns_buildsqltimestamp
+    ns_fmttime
+    ns_gmtime
+    ns_httptime
+    ns_localsqltimestamp
+    ns_localtime
+    ns_parsehttptime
+    ns_parsesqltime
+    ns_parsesqltimestamp
+    ns_parsetime
+    ns_time
+    server1:nscp 3> exit
+
+    Goodbye!
+    Connection closed by foreign host.
+    [neon:~] Michael% 
+}}}
