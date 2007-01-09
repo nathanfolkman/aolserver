@@ -34,7 +34,7 @@ An example configuration for the control port interface is shown below. Three se
     login:nsadmin
     Password:x
 
-    Welcome to tool running at /usr/local/aolserver/bin/nsd (pid 7884)
+    Welcome to server1 running at /usr/local/aolserver/bin/nsd (pid 7884)
     AOLserver/4.5.0 (aolserver4_5) for osx built on Jan  4 2007 at 17:11:28
     CVS Tag: $Name:  $
     server1:nscp 1> ns_time
