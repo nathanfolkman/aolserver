@@ -1,7 +1,7 @@
 #summary Control Port
 
 =Introduction=
-OLserver includes a control port interface that can be enabled with the nscp module. This control port interface allows you to telnet to a specified host and port where you can administer the server and execute database commands while the server is running.
+AOLserver includes a control port interface that can be enabled with the nscp module. This control port interface allows you to telnet to a specified host and port where you can administer the server and execute database commands while the server is running.
 The control port interface is a Tcl interface. Within it, you can execute any Tcl command that Tcl libraries and ADP can; the only exceptions being the ns_conn commands.
 To administer a server with the control port interface while it is running, the nscp module must be loaded into the server. To set permissions for the server, the nsperm module must also be loaded. To execute database commands while the server is running, you must also configure database services for the server, including database drivers and pools.
 
