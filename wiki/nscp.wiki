@@ -62,7 +62,7 @@ An example configuration for the control port interface is shown below. Three se
 }}}
 
 ===Best Practices==
-Type "lsort \[info commands\]" for a complete list of commands available to you. You can type nearly any Tcl command available to AOlserver Tcl libraries and ADPs. This includes the complete Tcl core and nearly any ns_* command. Type "lsort [info commands ns*]" for a sorted list of AOLserver Tcl commands.
+Type {{{lsort [info commands]}}} for a complete list of commands available to you. You can type nearly any Tcl command available to AOlserver Tcl libraries and ADPs. This includes the complete Tcl core and nearly any ns_* command. Type {{{lsort [info commands ns*]}}} for a sorted list of AOLserver Tcl commands.
 
 ===Useful commands:===
 
