@@ -3,7 +3,7 @@
 =AOLserver Control Port (nscp.so)=
 
 ==Introduction==
-AOLserver includes a control port interface that can be enabled with the nscp module. This control port interface allows you to telnet to a specified host and port where you can administer the server and execute commands while the server is running; the only exceptions being the ns_conn commands which need a connection.
+AOLserver includes a control port interface that can be enabled with the nscp module. The control port interface allows you to telnet to a specified host and port where you can administer the server and execute commands while the server is running; the only exceptions being the ns_conn commands which need a connection.
 
 ==Configuration==
 An example configuration for the control port interface is shown below. Three sections of the configuration file are included. The nscp module is loaded into the /modules section for servername. The /module/nscp section defines the control port parameters, and the /module/nscp/users section defines the users who can log into the control port.
