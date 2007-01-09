@@ -61,13 +61,14 @@ An example configuration for the control port interface is shown below. Three se
     [neon:~] Michael% 
 }}}
 
-===Best Practices==
-Type {{{lsort [info commands]}}} for a complete list of commands available to you. You can type nearly any Tcl command available to AOlserver Tcl libraries and ADPs. This includes the complete Tcl core and nearly any ns_* command. Type {{{lsort [info commands ns*]}}} for a sorted list of AOLserver Tcl commands.
+==Best Practices==
+Type {{{lsort [info commands]}}} for a complete list of commands available to you. You can type nearly any Tcl command available to AOlserver Tcl libraries and ADPs. This includes the complete Tcl core and nearly any {{{ns_*}}} command. Type {{{lsort [info commands ns*]}}} for a sorted list of AOLserver Tcl commands.
 
 ===Useful commands:===
 
-*ns_shutdown* - Shuts down the server. 
+{{{ns_shutdown}}} - Shuts down the server. 
 
-*ns_info uptime* - How long the server has been running. 
+{{{ns_info uptime}}} - How long the server has been running. 
 
-*exiti* - Exit the control port.
+{{{exit}}} - Exit the control port.
+
