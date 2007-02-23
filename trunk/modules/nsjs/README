@@ -1,0 +1,8 @@
+Mac OS X Installation Notes:
+
+js/src/config/Darwin.mk:
+
+  46 CC = gcc -pipe
+
+  52 #MKSHLIB = libtool $(XMKSHLIBOPTS) -framework System
+  53 MKSHLIB = $(CC) -dynamiclib
