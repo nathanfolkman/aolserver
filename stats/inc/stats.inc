@@ -8,13 +8,13 @@ set url [ns_adp_argv 1]
   
     function getData() {
         dojo.io.bind ({
-            url: '<%=$url%>',
+            url: 'json/driver.json',
             load: function(type, data, evt) {
                 updateTimestamp(data.timestamp);
                 setText('error', '');
                 
                 var statsData = [];
-                
+              
                 for (row in data.rows) {
                     var socks = data.rows[row]['socks'];
                     var sockStr = "";
@@ -22,21 +22,21 @@ set url [ns_adp_argv 1]
                     for (sock in socks) {
                         sockStr = sockStr + socks[sock]['id'] + ' (' + socks[sock]['state'] + ') <br>';
                     }
-                     
-                    var o = {
-                        Id:row,
-                        Name:data.rows[row]['name'],
-                        Time:parseInt(data.rows[row]['time']), 
-                        Spins:parseInt(data.rows[row]['spins']), 
-                        Accepts:parseInt(data.rows[row]['accepts']), 
-                        Queued:parseInt(data.rows[row]['queued']), 
-                        Reads:parseInt(data.rows[row]['reads']), 
-                        Dropped:parseInt(data.rows[row]['dropped']), 
-                        Overflow:parseInt(data.rows[row]['overflow']), 
-                        Timeout:parseInt(data.rows[row]['timeout']),
-                        Socks:sockStr
-                    };
                     
+                    var o = new Object();
+                    
+                    o.Id = row
+                    
+                    for (field in data.headers) {
+                		var type = data.headers[field]['type']
+                		
+                		if (type == 'Int') {
+                		    o[field] = parseInt(data.rows[row][field])
+                		} else {
+                		    o[field] = data.rows[row][field]
+                		}
+                	}
+                
                     statsData.push(o);
                 }
                 
@@ -63,16 +63,17 @@ set url [ns_adp_argv 1]
         multiple="false" alternateRows="true"
         cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
         <thead>
-        <tr>
-            <th field="Name" dataType="String" align="left">Name</th>
-            <th field="Spins" dataType="Number" align="right">Spins</th>
-            <th field="Accepts" dataType="Number" align="right">Accepts</th>
-            <th field="Queued" dataType="Number" align="right">Queued</th>
-            <th field="Reads" dataType="Number" align="right">Reads</th>
-            <th field="Dropped" dataType="Number" align="right">Dropped</th>
-            <th field="Overflow" dataType="Number" align="right">Overflows</th>
-            <th field="Timeout" dataType="Number" align="right">Timeouts</th>
-            <th field="Socks" dataType="html" align="left" nosort="true">Socks</th>
+        <tr id=tableHeaderRow>
+            <th field="name" dataType="String" align="left">Name</th>
+                       <th field="spins" dataType="Number" align="right">Spins</th>
+                       <th field="accepts" dataType="Number" align="right">Accepts</th>
+                       <th field="Queued" dataType="Number" align="right">Queued</th>
+                       <th field="Reads" dataType="Number" align="right">Reads</th>
+                       <th field="Dropped" dataType="Number" align="right">Dropped</th>
+                       <th field="Overflow" dataType="Number" align="right">Overflows</th>
+                       <th field="Timeout" dataType="Number" align="right">Timeouts</th>
+                       <th field="Socks" dataType="html" align="left" nosort="true">Socks</th>
+         
         </tr>
     	</thead>
     </table>
