@@ -27,6 +27,7 @@ foreach s $stats {
         </div>
     </div>
 </div>
+<br clear=all />
 
 <script>
     var UpdateStats = 1;
