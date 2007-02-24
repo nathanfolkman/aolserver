@@ -1,0 +1,68 @@
+<%
+load /usr/local/aolserver/lib/libtcljson.dylib
+
+set fields                  [list time spins accepts queued reads dropped overflow timeout]
+set sockFields              [list id sock state idx events revents accept timeout]
+
+set fieldsArr(time)         [list "Time" "Date"]
+set fieldsArr(spins)        [list "Spins" "Int"]
+set fieldsArr(accepts)      [list "Accepts" "Int"]
+set fieldsArr(queued)       [list "Queued" "Int"]
+set fieldsArr(reads)        [list "Reads" "Int"]
+set fieldsArr(dropped)      [list "Dropped" "Int"]
+set fieldsArr(overflow)     [list "Overflows" "Int"]
+set fieldsArr(timeout)      [list "Timeouts" "Int"]
+
+set sockFieldsArr(id)       [list "Id" "Int"]
+set sockFieldsArr(sock)     [list "Sock" "Int"]
+set sockFieldsArr(state)    [list "State" "String"]
+set sockFieldsArr(idx)      [list "Idx" "Int"]
+set sockFieldsArr(events)   [list "Events" "Int"]
+set sockFieldsArr(revents)  [list "Read Events" "Int"]
+set sockFieldsArr(accept)   [list "Accepts" "Int"]
+set sockFieldsArr(timeout)  [list "Timeouts" "Int"] 
+
+set stats [json.newObject]
+set headers [json.newObject]
+
+foreach field $fields {
+    set title [lindex $fieldsArr($field) 0]
+    set type [lindex $fieldsArr($field) 1]
+    
+    set header [json.newObject]
+    
+    json.objectAddObject $header "title" [json.newString $title]
+    json.objectAddObject $header "type" [json.newString $type]
+    
+    json.objectAddObject $headers $field $header
+}
+
+json.objectAddObject $stats "headers" $headers 
+
+set rows [json.newArray]
+
+foreach driver [ns_driver list] {
+    catch {unset driverArr}
+
+    array set driverArr [ns_driver query $driver]
+    array set statsArr $driverArr(stats)
+    
+    set socks $driverArr(socks)
+    set row [json.newObject]
+    
+    json.objectAddObject $row "name" [json.newString $driver]
+    
+    foreach field $fields {
+        json.objectAddObject $row $field [json.newString $statsArr($field)]
+    }
+    
+    json.arrayAddObject $rows $row
+}
+
+json.objectAddObject $stats "timestamp" [json.newString [ns_time]]
+json.objectAddObject $stats "rows" $rows
+
+ns_adp_trunc
+ns_adp_puts [json.objectToString $stats]
+ns_adp_break
+%>
