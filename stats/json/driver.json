@@ -1,9 +1,9 @@
 <%
 load /usr/local/aolserver/lib/libtcljson.dylib
 
-set fields                  [list time spins accepts queued reads dropped overflow timeout]
-set sockFields              [list id sock state idx events revents accept timeout]
+set fields                  [list name time spins accepts queued reads dropped overflow timeout]
 
+set fieldsArr(name)         [list "Name" "String"]
 set fieldsArr(time)         [list "Time" "Date"]
 set fieldsArr(spins)        [list "Spins" "Int"]
 set fieldsArr(accepts)      [list "Accepts" "Int"]
@@ -12,15 +12,6 @@ set fieldsArr(reads)        [list "Reads" "Int"]
 set fieldsArr(dropped)      [list "Dropped" "Int"]
 set fieldsArr(overflow)     [list "Overflows" "Int"]
 set fieldsArr(timeout)      [list "Timeouts" "Int"]
-
-set sockFieldsArr(id)       [list "Id" "Int"]
-set sockFieldsArr(sock)     [list "Sock" "Int"]
-set sockFieldsArr(state)    [list "State" "String"]
-set sockFieldsArr(idx)      [list "Idx" "Int"]
-set sockFieldsArr(events)   [list "Events" "Int"]
-set sockFieldsArr(revents)  [list "Read Events" "Int"]
-set sockFieldsArr(accept)   [list "Accepts" "Int"]
-set sockFieldsArr(timeout)  [list "Timeouts" "Int"] 
 
 set stats [json.newObject]
 set headers [json.newObject]
@@ -52,7 +43,7 @@ foreach driver [ns_driver list] {
     
     json.objectAddObject $row "name" [json.newString $driver]
     
-    foreach field $fields {
+    foreach field [array names statsArr] {
         json.objectAddObject $row $field [json.newString $statsArr($field)]
     }
     
