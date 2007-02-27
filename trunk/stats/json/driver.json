@@ -1,31 +1,22 @@
 <%
 load /usr/local/aolserver/lib/libtcljson.dylib
 
-set fields                  [list name time spins accepts queued reads dropped overflow timeout]
-
-set fieldsArr(name)         [list "Name" "String"]
-set fieldsArr(time)         [list "Time" "Date"]
-set fieldsArr(spins)        [list "Spins" "Int"]
-set fieldsArr(accepts)      [list "Accepts" "Int"]
-set fieldsArr(queued)       [list "Queued" "Int"]
-set fieldsArr(reads)        [list "Reads" "Int"]
-set fieldsArr(dropped)      [list "Dropped" "Int"]
-set fieldsArr(overflow)     [list "Overflows" "Int"]
-set fieldsArr(timeout)      [list "Timeouts" "Int"]
-
 set stats [json.newObject]
 set headers [json.newObject]
 
-foreach field $fields {
-    set title [lindex $fieldsArr($field) 0]
-    set type [lindex $fieldsArr($field) 1]
+set colNames [nsstats::getColumns "driver"]
+
+foreach colName $colNames {
+	set colFields [nsstats::getColumn "driver" $colName]
+    set title [lindex $colFields 1]
+    set type [lindex $colFields 2]
     
     set header [json.newObject]
     
     json.objectAddObject $header "title" [json.newString $title]
     json.objectAddObject $header "type" [json.newString $type]
     
-    json.objectAddObject $headers $field $header
+    json.objectAddObject $headers $colName $header
 }
 
 json.objectAddObject $stats "headers" $headers 
@@ -44,7 +35,13 @@ foreach driver [ns_driver list] {
     json.objectAddObject $row "name" [json.newString $driver]
     
     foreach field [array names statsArr] {
-        json.objectAddObject $row $field [json.newString $statsArr($field)]
+		set value $statsArr($field)
+		
+		if {[string match "time" $field]} {
+			set value [lindex [split $value ":"] 0]
+		}
+		
+        json.objectAddObject $row $field [json.newString $value]
     }
     
     json.arrayAddObject $rows $row
