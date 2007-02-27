@@ -1,5 +1,5 @@
 <%
-set url [ns_adp_argv 1]
+set stat [ns_adp_argv 1]
 %>
 
 <script type="text/javascript">
@@ -8,7 +8,7 @@ set url [ns_adp_argv 1]
   
     function getData() {
         dojo.io.bind ({
-            url: 'json/driver.json',
+            url: 'json/<%=$stat%>.json',
             load: function(type, data, evt) {
                 updateTimestamp(data.timestamp);
                 setText('error', '');
@@ -29,11 +29,17 @@ set url [ns_adp_argv 1]
                     
                     for (field in data.headers) {
                 		var type = data.headers[field]['type']
+                		var value = data.rows[row][field]
                 		
-                		if (type == 'Int') {
-                		    o[field] = parseInt(data.rows[row][field])
+                		if (type == 'int') {
+                		    o[field] = parseInt(value)
+                		} else if (type == 'date') {
+                		    var date = new Date()
+                		    date.setTime(value * 1000)
+                		    
+                		    o[field] = date
                 		} else {
-                		    o[field] = data.rows[row][field]
+                		    o[field] = value
                 		}
                 	}
                 
@@ -64,16 +70,31 @@ set url [ns_adp_argv 1]
         cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
         <thead>
         <tr id=tableHeaderRow>
-            <th field="name" dataType="String" align="left">Name</th>
-                       <th field="spins" dataType="Number" align="right">Spins</th>
-                       <th field="accepts" dataType="Number" align="right">Accepts</th>
-                       <th field="Queued" dataType="Number" align="right">Queued</th>
-                       <th field="Reads" dataType="Number" align="right">Reads</th>
-                       <th field="Dropped" dataType="Number" align="right">Dropped</th>
-                       <th field="Overflow" dataType="Number" align="right">Overflows</th>
-                       <th field="Timeout" dataType="Number" align="right">Timeouts</th>
-                       <th field="Socks" dataType="html" align="left" nosort="true">Socks</th>
-         
+
+<%
+foreach colName [nsstats::getColumns $stat] {
+    set colFields [nsstats::getColumn $stat $colName]
+    set title [lindex $colFields 1]
+    set type [lindex $colFields 2]
+    set format ""
+
+    switch $type {
+        "date" {
+            set format "format=\"%r (%D)\""
+            set align "left"
+        }
+        "int" {
+            set align "right"
+        }
+        default { 
+            set align "left"
+        }
+    }
+
+    ns_adp_puts "<th field=\"$colName\" dataType=\"$type\" align=\"$align\" $format>$title</th>"
+}
+%>
+
         </tr>
     	</thead>
     </table>

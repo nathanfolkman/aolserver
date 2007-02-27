@@ -3,6 +3,7 @@ namespace eval nsstats {
     
     variable Thread
     variable Sched
+	variable Columns
     
     set Thread(0)   "NS_OK"
     set Thread(-1)  "NS_ERROR"
@@ -92,6 +93,38 @@ namespace eval nsstats {
         
         return [set Stats($name) $description]
     }
+
+	proc setColumns {stat colNames} {
+		variable Columns
+		
+		return [set Columns($stat) $colNames]
+	}
+	
+	proc addColumn {stat colName description type} {
+		variable Columns
+		
+		return [set Columns($stat,$colName) [list $colName $description $type]]
+	}
+	
+	proc getColumns {stat} {
+		variable Columns
+		
+		if {![info exists Columns($stat)]} {
+			return ""
+		}
+		
+		return $Columns($stat)
+	}
+	
+	proc getColumn {stat colName} {
+		variable Columns
+
+		if {![info exists Columns($stat,$colName)]} {
+			return ""
+		}
+		
+		return $Columns($stat,$colName)
+	}
     
     proc getStatDescription {name} {
         variable Stats
