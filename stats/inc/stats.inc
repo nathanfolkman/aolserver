@@ -31,8 +31,12 @@ set stat [ns_adp_argv 1]
                 		var type = data.headers[field]['type']
                 		var value = data.rows[row][field]
                 		
-                		if (type == 'int') {
+                		if (type == 'number') {
+                                    if (value == '') {
+                                        o[field] = null
+                                    } else {
                 		    o[field] = parseInt(value)
+                                    }
                 		} else if (type == 'date') {
                 		    var date = new Date()
                 		    date.setTime(value * 1000)
@@ -83,7 +87,7 @@ foreach colName [nsstats::getColumns $stat] {
             set format "format=\"%r (%D)\""
             set align "left"
         }
-        "int" {
+        "number" {
             set align "right"
         }
         default { 

@@ -9,21 +9,40 @@ set password [ns_config $path password "stats"]
 nsstats::enable $enabled
 nsstats::setLogin $user $password
 
-nsstats::addStat driver "Driver"
-nsstats::addStat threads "Threads"
-
 #
 # Driver
 #
 
+nsstats::addStat driver "Driver"
+
 nsstats::addColumn "driver" "name" "Name" "string"
 nsstats::addColumn "driver" "time" "Time" "date"
-nsstats::addColumn "driver" "spins" "Spins" "int"
-nsstats::addColumn "driver" "accepts" "Accepts" "int"
-nsstats::addColumn "driver" "queued" "Queued" "int"
-nsstats::addColumn "driver" "reads" "Reads" "int"
-nsstats::addColumn "driver" "dropped" "Dropped" "int"
-nsstats::addColumn "driver" "overflow" "Overflows" "int"
-nsstats::addColumn "driver" "timeout" "Timeouts" "int"
+nsstats::addColumn "driver" "spins" "Spins" "number"
+nsstats::addColumn "driver" "accepts" "Accepts" "number"
+nsstats::addColumn "driver" "queued" "Queued" "number"
+nsstats::addColumn "driver" "reads" "Reads" "number"
+nsstats::addColumn "driver" "dropped" "Dropped" "number"
+nsstats::addColumn "driver" "overflow" "Overflows" "number"
+nsstats::addColumn "driver" "timeout" "Timeouts" "number"
 
-nsstats::setColumns "driver" [list "name" "time" "spins" "accepts" "queued" "reads" "dropped" "overflow" "timeout"]
+#
+# Threads
+#
+
+nsstats::addStat threads "Threads"
+
+nsstats::addColumn "threads" "name" "Name" "string"
+nsstats::addColumn "threads" "parent" "Parent" "string"
+nsstats::addColumn "threads" "tid" "Thread Id" "number"
+nsstats::addColumn "threads" "flags" "Flags" "string"
+nsstats::addColumn "threads" "ctime" "Created" "date"
+nsstats::addColumn "threads" "proc" "Proc" "string"
+nsstats::addColumn "threads" "args" "Args" "string"
+nsstats::addColumn "threads" "connid" "Conn Id" "number"
+nsstats::addColumn "threads" "peer" "Peer" "string"
+nsstats::addColumn "threads" "state" "State" "string"
+nsstats::addColumn "threads" "elapsed" "Elapsed" "number"
+nsstats::addColumn "threads" "sent" "Sent" "number"
+nsstats::addColumn "threads" "method" "Method" "string"
+nsstats::addColumn "threads" "url" "URL" "string"
+

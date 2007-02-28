@@ -93,15 +93,11 @@ namespace eval nsstats {
         
         return [set Stats($name) $description]
     }
-
-	proc setColumns {stat colNames} {
-		variable Columns
-		
-		return [set Columns($stat) $colNames]
-	}
 	
 	proc addColumn {stat colName description type} {
 		variable Columns
+		
+		lappend Columns($stat) $colName
 		
 		return [set Columns($stat,$colName) [list $colName $description $type]]
 	}
