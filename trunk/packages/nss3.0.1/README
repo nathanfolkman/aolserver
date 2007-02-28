@@ -1,4 +1,4 @@
-$Id:$
+$Id$
 
 This package installs a Tcl API used to send requests to the Amazon S3 service.
 This package is still in development.  Be sure to update often.
@@ -40,6 +40,8 @@ This package is still in development.  Be sure to update often.
 4. USAGE
 --------
 
+    Create a bucket:
+
     nscp 4> ::nss3::queue createBucket mynewbucket
     http0
     nscp 5> ::nss3::wait http0 result status
@@ -48,6 +50,9 @@ This package is still in development.  Be sure to update often.
 
     nscp 7> set status
     200
+
+    Write an object:
+
     nscp 8> ::nss3::queue writeObject mynewbucket mynewobject "this is my data"
     http0
     nscp 9> ::nss3::wait http0 result status
@@ -56,6 +61,9 @@ This package is still in development.  Be sure to update often.
 
     nscp 11> set status
     200
+
+    Get an object:
+
     nscp 12> ::nss3::queue getObject mynewbucket mynewobject
     http0
     nscp 13> ::nss3::wait http0 result status
@@ -64,6 +72,9 @@ This package is still in development.  Be sure to update often.
     this is my data
     nscp 15> set status
     200
+
+    List a bucket:
+
     nscp 16> ::nss3::queue getObject mynewbucket
     http0
     nscp 17> ::nss3::wait http0 result status
@@ -73,6 +84,9 @@ This package is still in development.  Be sure to update often.
     ...xml...
     nscp 19> set status
     200
+
+    Delete an object:
+
     nscp 20> ::nss3::queue deleteObject mynewbucket mynewobject
     http0
     nscp 21> ::nss3::wait http0 result status
