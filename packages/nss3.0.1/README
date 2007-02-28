@@ -1,0 +1,83 @@
+$Id:$
+
+This package installs a Tcl API used to send requests to the Amazon S3 service.
+This package is still in development.  Be sure to update often.
+
+
+1. REQUIREMENTS
+---------------
+
+    - AOLserver4.5
+    - TCL 8.4 or greater
+
+2. INSTALLATION
+---------------
+
+    Copy the package directory into the AOLserver lib directory. Assumes tcl
+    was built using the AOLserver lib path as the prefix:
+
+    % cp -r nss3.x.x /usr/local/aolserver/lib
+
+3. RUNNING
+----------
+
+    At start up, or in the control port, use the tcl "package" command to
+    load the package:
+
+    nscp 1> package require nss3
+    x.x
+
+    Configure the API to use your own public and private keys.  These values
+    are kept for the life of the thread.  If done at start up in the -main-
+    thread, the values will persist for the life of the server:
+
+    nscp 2> nss3::setConfig publicKey "xxxxxxxxxxxxxxxxxxxx"
+    xxxxxxxxxxxxxxxxxxxx
+
+    nscp 3> nss3::setConfig privateKey "xxxxxxxxxxxxxxxxxxxx"
+    xxxxxxxxxxxxxxxxxxxx
+
+4. USAGE
+--------
+
+    nscp 4> ::nss3::queue createBucket mynewbucket
+    http0
+    nscp 5> ::nss3::wait http0 result status
+    1
+    nscp 6> set result 
+
+    nscp 7> set status
+    200
+    nscp 8> ::nss3::queue writeObject mynewbucket mynewobject "this is my data"
+    http0
+    nscp 9> ::nss3::wait http0 result status
+    1
+    nscp 10> set result
+
+    nscp 11> set status
+    200
+    nscp 12> ::nss3::queue getObject mynewbucket mynewobject
+    http0
+    nscp 13> ::nss3::wait http0 result status
+    1
+    nscp 14> set result
+    this is my data
+    nscp 15> set status
+    200
+    nscp 16> ::nss3::queue getObject mynewbucket
+    http0
+    nscp 17> ::nss3::wait http0 result status
+    1
+    nscp 18> set result
+    <?xml version="1.0" encoding="UTF-8"?>
+    ...xml...
+    nscp 19> set status
+    200
+    nscp 20> ::nss3::queue deleteObject mynewbucket mynewobject
+    http0
+    nscp 21> ::nss3::wait http0 result status
+    1
+    nscp 22> set result 
+
+    nscp 23> set status
+    204
