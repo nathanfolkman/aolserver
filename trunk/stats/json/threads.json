@@ -1,68 +1,97 @@
 <%
-    set fields [list name parent tid flags ctime proc args]
-    set connFields [list connId peer state method url elapsed sent]
+load /usr/local/aolserver/lib/libtcljson.dylib
+
+set stats [json.newObject]
+set headers [json.newObject]
+
+set colNames [nsstats::getColumns "threads"]
+
+foreach colName $colNames {
+	set colFields [nsstats::getColumn "threads" $colName]
+    set title [lindex $colFields 1]
+    set type [lindex $colFields 2]
     
+    set header [json.newObject]
+    
+    json.objectAddObject $header "title" [json.newString $title]
+    json.objectAddObject $header "type" [json.newString $type]
+    
+    json.objectAddObject $headers $colName $header
+}
+
+json.objectAddObject $stats "headers" $headers
+
+set rows [json.newArray]
+
+set fields [list name parent tid flags ctime proc args]
+set connFields [list connid peer state method url elapsed sent]
+
+foreach thread [ns_info threads] {
+    set i 0
+
+    set row [json.newObject]
+      
     foreach field $fields {
-        lappend headers "${field}:\"${field}\""
-    }
-
-    foreach thread [ns_info threads] {
-        set i 0
-        set thisRow ""
+        set skip 0
+        set value [lindex $thread $i]
         
-        foreach field $fields {
-            set value [lindex $thread $i]
-            
-            switch $i {
-                3 {
-                    set value "\"[_ns_stats.getThreadType $value]\""
-                }
-                6 {
-                    if {[string match "ns:connthread" [lindex $thread 5]]} {
-                        set connRow ""
-                        set connValues [split $value]
-                        
-                        set j 0
-                        
-                        foreach connField $connFields {
-                            set value [lindex $connValues $j]
+        if {[string match "*0x0*" $value]} {
+            set value ""
+        }
 
-                            if {$j == 5} {
-                                if {[catch {
-                                    set sec [lindex [split $value "."] 0]
-                                    set us [format %.1f [lindex [split $value "."] 1]]
-                                    set value [format %4f [expr ($us / 1000000) + $sec]] 
-                                }]} {
-                                    set value 0
-                                }
+        switch $i {
+            3 {
+                set value [_ns_stats.getThreadType $value]
+            }
+            6 {
+                if {[string match "ns:connthread" [lindex $thread 5]]} {
+                    set connValues [split $value]
+
+                    set j 0
+
+                    foreach connField $connFields {
+                        set value [lindex $connValues $j]
+
+                        if {$j == 5} {
+                            if {[catch {
+                                set sec [lindex [split $value "."] 0]
+                                set us [format %.1f [lindex [split $value "."] 1]]
+                                set value [format %4f [expr ($us / 1000000) + $sec]] 
+                            }]} {
+                                set value ""
                             }
-
-                            lappend connRow "${connField}:\"$value\""
-                            incr j
                         }
+
+                        json.objectAddObject $row $connField [json.newString $value]
                         
-                        set value "\{[join $connRow ", "]\}"
-                    } else {
-                        set value "\"$value\""
+                        incr j                        
+                    }
+                } else {
+                    json.objectAddObject $row $field [json.newString $value]
+                    
+                    foreach connField $connFields {
+                        json.objectAddObject $row $connField [json.newString ""]
                     }
                 }
-                default {
-                    set value "\"$value\""
-                }
+                
+                set skip 1
             }
-            
-            lappend thisRow "${field}:$value"
-            incr i
         }
-        
-        lappend rows "\{[join $thisRow ", "]\}"
-    }
-    
-    set timestamp "timestamp: [ns_time]"
-    set headers "headers: \{[join $headers ", "]\}"
-    set rows "rows: \[[join $rows ", "]\]"
 
-    ns_adp_trunc
-    ns_adp_puts "\{[join [list $timestamp $headers $rows] ", "]\}"
-    ns_adp_break
+        if {!$skip} {
+            json.objectAddObject $row $field [json.newString $value]
+        }
+
+        incr i
+    }
+
+    json.arrayAddObject $rows $row
+}
+
+json.objectAddObject $stats "timestamp" [json.newString [ns_time]]
+json.objectAddObject $stats "rows" $rows
+
+ns_adp_trunc
+ns_adp_puts [json.objectToString $stats]
+ns_adp_break
 %>
