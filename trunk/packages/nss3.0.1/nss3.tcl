@@ -197,7 +197,7 @@ proc nss3::clearRequest {} {
     array unset request
 }
 
-proc nss3::queue {action {bucket ""} {object ""} {data ""}} {
+proc nss3::queue {action bucket {object ""} {data ""}} {
     createRequest $action $bucket $object $data
     set requestHeaders [ns_set create]
 
