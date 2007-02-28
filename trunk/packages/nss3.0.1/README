@@ -1,5 +1,3 @@
-$Id:$
-
 This package installs a Tcl API used to send requests to the Amazon S3 service.
 This package is still in development.  Be sure to update often.
 
@@ -8,6 +6,10 @@ This package is still in development.  Be sure to update often.
 
     - AOLserver4.5
     - TCL 8.4 or greater
+    - tcllib
+        - sha1
+        - md5
+        - base64
 
 2. INSTALLATION
 ---------------
