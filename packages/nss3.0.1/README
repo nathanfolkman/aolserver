@@ -1,64 +1,63 @@
+
+Contents
+--------
+    1. Introduction
+    2. Requirements
+    3. Installing
+    4. Running
+    5. Usage 
+
+
+1. Introduction
+---------------
 This package installs a Tcl API used to send requests to the Amazon S3 service.
 This package is still in development.  Be sure to update often.
 
-This package uses a namespace variable to hold configuration options. These
-options will persist for the life of the thread or conn. See the RUNNING
-section for more information about setting the configuration options after
-runnign package require.
 
-The package also uses a global array to hold the current request parameters
-and headers.  This array will be cleaned up after the connection.  It is also
-explicitly cleaned up at the end of nss3::queue by nss3::cleanRequest.
-
-The only procs that are public are nss3::queue and nss3::wait.  The other
-procs are internal and should be considered private.
-
-REQUIREMENTS
-------------
-
-    - AOLserver4.5
-    - TCL 8.4 or greater
-    - tcllib
+2. Requirements 
+---------------
+    1. AOLserver4.5
+    2. TCL 8.4 or greater
+    3. tcllib
         - sha1
         - md5
         - base64
 
-INSTALLATION
-------------
 
-    Copy the package directory into the AOLserver lib directory. Assumes tcl
-    was built using the AOLserver lib path as the prefix:
+3. Installation
+---------------
+Copy the package directory into the AOLserver lib directory. Assumes tcl
+was built using the AOLserver lib path as the prefix:
 
     % cp -r nss3.x.x /usr/local/aolserver/lib
 
-RUNNING
--------
 
-    At start up, or in the control port, use the tcl "package" command to
-    load the package:
+4. Running
+----------
+At start up, or in the control port, use the tcl "package" command to
+load the package:
 
     nscp 1> package require nss3
-    x.x
 
-    Configure the package to use your own public and private keys. These values
-    are kept for the life of the thread.  If done at start up in the -main-
-    thread, the values will persist for the life of the server:
+    Then configure the package to use your own public and private keys. 
+    These values are kept for the life of the thread.  If done at start up 
+    in the main thread, the values will persist for the life of the server.
+    They will also be included in any threads spawned by the main thread.
 
-    nscp 2> nss3::setConfig publicKey "xxxxxxxxxxxxxxxxxxxx"
-    xxxxxxxxxxxxxxxxxxxx
-
+    nscp 2> nss3::setConfig publicKey "xxxxxxxxxxxxxxxxxxxx" 
     nscp 3> nss3::setConfig privateKey "xxxxxxxxxxxxxxxxxxxx"
-    xxxxxxxxxxxxxxxxxxxx
 
-USAGE
------
-    The ::nss3::wait command works just like the the ns_http wait command.
-    You can use the -result flag to set the result in a variable and get a
-    1 or 0 back, or you can not set the result flag and get the proc will
-    return the result. -status and -headers are also valid flags. -headers
-    is a setId created by ns_set create.
 
-    Create a bucket:
+4. Usage
+--------
+The ::nss3::wait command works just like the the ns_http wait command.
+You can use the -result flag to set the result in a variable and get a
+1 or 0 back, or you can not set the result flag and get the proc will
+return the result. -status and -headers are also provided. -headers
+is a setId created by ns_set create. 
+
+4.1 Create a bucket
+-------------------
 
     nscp 4> ::nss3::queue createBucket -bucket mynewbucket
     http0
@@ -69,7 +68,8 @@ USAGE
     nscp 7> set status
     200
 
-    Write an object:
+4.2 Write an object
+-------------------
 
     nscp 8> ::nss3::queue writeObject -bucket mynewbucket -object mynewobject -data "this is my data"
     http0
@@ -80,7 +80,8 @@ USAGE
     nscp 11> set status
     200
 
-    Get an object:
+4.3 Get an object
+-----------------
 
     nscp 12> ::nss3::queue getObject -bucket mynewbucket -object mynewobject
     http0
@@ -91,19 +92,28 @@ USAGE
     nscp 15> set status
     200
 
-    List a bucket:
+    You could also leave out the -result flag and the result will be 
+    returned:
+
+    nscp 13> ::nss3::wait http0 -status status
+    this is my data
+    nscp 15> set status
+    200
+
+4.4 List a bucket
+-----------------
 
     nscp 16> ::nss3::queue getObject -bucket mynewbucket
     http0
     nscp 17> ::nss3::wait http0 -result result -status status
     1
     nscp 18> set result
-    <?xml version="1.0" encoding="UTF-8"?>
-    ...xml...
+    <?xml version="1.0" encoding="UTF-8"?>...
     nscp 19> set status
     200
 
-    Delete an object:
+4.5 Delete an object
+-------------------
 
     nscp 20> ::nss3::queue deleteObject -bucket mynewbucket -object mynewobject
     http0
