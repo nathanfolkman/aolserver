@@ -172,12 +172,6 @@ proc ::nss3::request args {
         }
     }
 
-    set queueCmd [concat [list ::nss3::queue] $queueArgs]
-ns_log notice $queueCmd
-
-    set waitCmd [concat [list ::nss3::wait token] $waitArgs]
-ns_log notice $waitCmd
-
     set token [eval [concat [list ::nss3::queue] $queueArgs]]
     return [eval [concat [list ::nss3::wait $token] $waitArgs]]
 }
