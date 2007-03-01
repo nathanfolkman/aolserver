@@ -26,7 +26,9 @@
 # version of this file under either the License or the GPL.
 
 package provide nss3 0.1
-namespace eval ::nss3:: {}
+
+namespace eval ::nss3:: {
+}
 
 proc ::nss3::setConfig {name value} {
     variable config
