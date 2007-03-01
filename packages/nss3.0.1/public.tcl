@@ -55,8 +55,8 @@ proc ::nss3::queue args {
     lappend command [::nss3::getConfig host][::nss3::getParam resource]
 
     if {[::nss3::debug]} {
-        set requestObject [::nss3::printRequest]
-        ns_log debug "nss3: ${command}\n${requestObject}"
+        ns_log debug "nss3: ${command}"
+        ::nss3::logRequest
     }
 
     ::nss3::clearRequest
