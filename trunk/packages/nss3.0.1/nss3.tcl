@@ -160,6 +160,14 @@ proc ::nss3::createRequest {action bucket object data contentType} {
             setParam method DELETE
             setParam resource /${bucket}
         }
+        attributes {
+            set resource [list $bucket]
+            if {[string length $object]} {
+                lappend resource $object
+            }
+            setParam method HEAD
+            setParam resource /[join $resource "/"]
+        }
     }
 
     set dateFormat "%a, %d %b %Y %T %Z"
@@ -173,7 +181,7 @@ proc ::nss3::queue args {
     set action [lindex $args 0]
 
     lappend validActions createBucket writeObject
-    lappend validActions getObject delete
+    lappend validActions getObject delete attributes
 
     if {[lsearch -exact $validActions $action] == -1} {
         error "Invalid action \"${action}\". Should be: ${validActions}"
