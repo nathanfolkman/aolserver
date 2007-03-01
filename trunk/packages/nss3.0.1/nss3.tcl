@@ -93,33 +93,6 @@ proc nss3::getHeader {name} {
     return $request(header.${name})
 }
 
-proc nss3::debug {} {
-    if {![string length [set v [getConfig debug]]] || ![string is int $v]} {
-        return 0
-    }
-    return $v
-}
-
-proc nss3::headerNames {{pattern ""}} {
-    global request
-    lappend command array names request
-
-    if {[string length $pattern]} {
-        lappend command "header.${pattern}"
-    } else {
-        lappend command header.*
-    }
-
-    set nameList [eval $command]
-    set returnList [list]
-
-    foreach name $nameList {
-       lappend returnList [lindex [split $name "."] 1]
-    }
-    
-    return $returnList
-}
-
 proc nss3::buildAuthHeader {} {
     foreach param [list method body resource] {
         set $param [getParam $param]
@@ -151,18 +124,6 @@ proc nss3::buildAuthHeader {} {
     set signature [string trim [::base64::encode $signature]]
 
     return "AWS [getConfig publicKey]:${signature}"
-}
-
-proc nss3::printRequest {} {
-    global request
-    set output [list]
-
-    foreach key [lsort [array names request]] {
-        set value $request(${key})
-        lappend output "${key}: ${value}"
-    }
-
-    return [join $output \n]
 }
 
 proc nss3::createRequest {action bucket {object ""} {data ""}} {
@@ -205,11 +166,6 @@ proc nss3::createRequest {action bucket {object ""} {data ""}} {
     setHeader Authorization [buildAuthHeader]
 }
 
-proc nss3::clearRequest {} {
-    global request
-    array unset request
-}
-
 proc nss3::queue {action bucket {object ""} {data ""}} {
     createRequest $action $bucket $object $data
     set requestHeaders [ns_set create]
@@ -246,4 +202,48 @@ proc nss3::wait {token resultVarName statusVarName {headerSetId ""}} {
     lappend command -result resultVar -status statusVar $token
 
     return [eval $command]
+}
+
+proc nss3::debug {} {
+    if {![string length [set v [getConfig debug]]] || ![string is int $v]} {
+        return 0
+    }
+    return $v
+}
+
+proc nss3::headerNames {{pattern ""}} {
+    global request
+    lappend command array names request
+
+    if {[string length $pattern]} {
+        lappend command "header.${pattern}"
+    } else {
+        lappend command header.*
+    }
+
+    set nameList [eval $command]
+    set returnList [list]
+
+    foreach name $nameList {
+       lappend returnList [lindex [split $name "."] 1]
+    }
+
+    return $returnList
+}
+
+proc nss3::printRequest {} {
+    global request
+    set output [list]
+
+    foreach key [lsort [array names request]] {
+        set value $request(${key})
+        lappend output "${key}: ${value}"
+    }
+
+    return [join $output \n]
+}
+
+proc nss3::clearRequest {} {
+    global request
+    array unset request
 }
