@@ -33,6 +33,11 @@ namespace eval ::nss3:: {
 
 proc ::nss3::queue args {
     set action [lindex $args 0]
+    set validFlags [list bucket object data contentType timeout]
+
+    if {[string match -flags $action]} {
+        return "-[join $validFlags " -"]"
+    }
 
     lappend validActions createBucket writeObject
     lappend validActions getObject delete attributes
@@ -96,6 +101,7 @@ proc ::nss3::queue args {
     }
 
     ::nss3::clearRequest
+
     return [eval $command]
 }
 
@@ -103,8 +109,13 @@ proc ::nss3::wait args {
     set token [lindex $args 0]
     set flags [lrange $args 1 end]
 
-    ::nss3::parseArgs flagsArray $flags
     set validFlags [list result status headers]
+
+    if {[string equal -flags $token]} {
+        return "-[join $validFlags " -"]"
+    }
+
+    ::nss3::parseArgs flagsArray $flags
 
     foreach flag [array names flagsArray] {
         if {[lsearch -exact $validFlags $flag] == -1} {
@@ -132,4 +143,41 @@ proc ::nss3::wait args {
     lappend command $token
 
     return [eval $command]
-} 
+}
+
+proc ::nss3::request args {
+    set action  [lindex $args 0]
+    set flagsAgf [lrange $args 1 end]
+
+    set queueFlags [::nss3::queue -flags]
+    set waitFlags [::nss3::wait -flags]
+    set validFlags [concat $queueFlags $waitFlags]
+
+    if {[string equal -flags $action]} {
+        return $validFlags
+    }
+ 
+    ::nss3::parseArgs flagsArray $flagsAgf
+
+    set queueArgs [list $action]
+    set waitArgs [list]
+
+    foreach flag [array names flagsArray] {
+        if {[lsearch -exact $queueFlags "-${flag}"] != -1} {
+            lappend queueArgs "-${flag}" $flagsArray(${flag})
+        } elseif {[lsearch -exact $waitFlags "-${flag}"] != -1} {
+            lappend waitArgs "-${flag}" $flagsArray(${flag})
+        } else {
+            error "Invalid flag \"-${flag}\". Should be: ${validFlags}"
+        }
+    }
+
+    set queueCmd [concat [list ::nss3::queue] $queueArgs]
+ns_log notice $queueCmd
+
+    set waitCmd [concat [list ::nss3::wait token] $waitArgs]
+ns_log notice $waitCmd
+
+    set token [eval [concat [list ::nss3::queue] $queueArgs]]
+    return [eval [concat [list ::nss3::wait $token] $waitArgs]]
+}
