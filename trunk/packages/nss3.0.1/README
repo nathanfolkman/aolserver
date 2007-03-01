@@ -63,18 +63,20 @@ You can use the -result flag to set the result in a variable and get a
 return the result. -status and -headers are also provided. -headers
 is a setId created by ns_set create. 
 
-There is also a ::nss3::request command that combines the two if async 
-is not needed. You can use issue -flags to any command to get a list of 
-valid flags:
+The ::nss3::request command combines the two if async is not needed. 
+You can use issue -flags to any command to get a list of valid flags:
 
-     ::nss3::queue -flags
-     -bucket -object -data -contentType -timeout
+    ::nss3::queue -flags
+    -bucket -object -data -contentType -timeout
 
-     ::nss3::wait -flags
-     -result -status -headers
+    ::nss3::wait -flags
+    -result -status -headers
 
-     ::nss3::request -flags
-     -bucket -object -data -contentType -timeout -result -status -headers
+    ::nss3::request -flags
+    -bucket -object -data -contentType -timeout -result -status -headers
+
+The -headers flag in the ::nss3::request command is for the result headers.
+And like the wait command it takes a set id created by ns_set.
 
 4.1 Create a bucket
 -------------------
