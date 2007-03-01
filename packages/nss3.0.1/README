@@ -1,8 +1,20 @@
 This package installs a Tcl API used to send requests to the Amazon S3 service.
 This package is still in development.  Be sure to update often.
 
-1. REQUIREMENTS
----------------
+This package uses a namespace variable to hold configuration options. These
+options will persist for the life of the thread or conn. See the RUNNING
+section for more information about setting the configuration options after
+runnign package require.
+
+The package also uses a global array to hold the current request parameters
+and headers.  This array will be cleaned up after the connection.  It is also
+explicitly cleaned up at the end of nss3::queue by nss3::cleanRequest.
+
+The only procs that are public are nss3::queue and nss3::wait.  The other
+procs are internal and should be considered private.
+
+REQUIREMENTS
+------------
 
     - AOLserver4.5
     - TCL 8.4 or greater
@@ -11,16 +23,16 @@ This package is still in development.  Be sure to update often.
         - md5
         - base64
 
-2. INSTALLATION
----------------
+INSTALLATION
+------------
 
     Copy the package directory into the AOLserver lib directory. Assumes tcl
     was built using the AOLserver lib path as the prefix:
 
     % cp -r nss3.x.x /usr/local/aolserver/lib
 
-3. RUNNING
-----------
+RUNNING
+-------
 
     At start up, or in the control port, use the tcl "package" command to
     load the package:
@@ -28,7 +40,7 @@ This package is still in development.  Be sure to update often.
     nscp 1> package require nss3
     x.x
 
-    Configure the API to use your own public and private keys.  These values
+    Configure the package to use your own public and private keys. These values
     are kept for the life of the thread.  If done at start up in the -main-
     thread, the values will persist for the life of the server:
 
@@ -38,8 +50,8 @@ This package is still in development.  Be sure to update often.
     nscp 3> nss3::setConfig privateKey "xxxxxxxxxxxxxxxxxxxx"
     xxxxxxxxxxxxxxxxxxxx
 
-4. USAGE
---------
+USAGE
+-----
 
     Create a bucket:
 
