@@ -24,6 +24,19 @@
 # replace them with the notice and other provisions required by the GPL.
 # If you do not delete the provisions above, a recipient may use your
 # version of this file under either the License or the GPL.
+#
+# -----------------------------------------------------------------------------
+#
+# This package uses a namespace variable to hold configuration options. These 
+# options will persist for the life of the thread or conn. See the README file
+# for more information about setting configuration options.
+# 
+# The package also uses a global array to hold the current request parameters 
+# and headers.  This array will be cleaned up after the connection.  It is also 
+# explicitly cleaned up at the end of nss3::queue by nss3::cleanRequest.
+# 
+# The only procs that are public are nss3::queue and nss3::wait.  The other 
+# procs are internal and should be considered private.
 
 package require sha1
 package require md5
@@ -123,16 +136,16 @@ proc nss3::buildAuthHeader {} {
         lappend x-amzHeaders "${header}:${value}"
     }
 
-    set sigParts [list $method ${Content-md5} ${Content-Type} $Date]
+    set signatureParts [list $method ${Content-md5} ${Content-Type} $Date]
 
     if {[llength ${x-amzHeaders}]} {
-        lappend sigParts [join ${x-amzHeaders} "\n"]
+        lappend signatureParts [join ${x-amzHeaders} "\n"]
     }
 
-    lappend sigParts $resource 
-    setParam signatureParts $sigParts
+    lappend signatureParts $resource 
+    setParam signatureParts $signatureParts
 
-    set signatureString [join $sigParts "\n"]
+    set signatureString [join $signatureParts "\n"]
     set signature [::sha1::hmac [getConfig privateKey] $signatureString]
     set signature [binary format H* $signature]
     set signature [string trim [::base64::encode $signature]]
@@ -152,7 +165,7 @@ proc nss3::printRequest {} {
     return [join $output \n]
 }
 
-proc nss3::createRequest {action {bucket ""} {object ""} {data ""}} {
+proc nss3::createRequest {action bucket {object ""} {data ""}} {
     switch -exact $action {
         createBucket {
             setParam method PUT
