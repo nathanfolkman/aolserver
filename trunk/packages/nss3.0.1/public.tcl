@@ -27,7 +27,9 @@
 # version of this file under either the License or the GPL.
  
 package provide nss3 0.1
-namespace eval ::nss3:: {}
+
+namespace eval ::nss3:: {
+}
 
 proc ::nss3::queue args {
     set action [lindex $args 0]
@@ -40,6 +42,7 @@ proc ::nss3::queue args {
     }
 
     ::nss3::parseArgs flagsArray [lrange $args 1 end] 
+
     set validFlags [list bucket object data contentType timeout]
 
     foreach flag [array names flagsArray] {
