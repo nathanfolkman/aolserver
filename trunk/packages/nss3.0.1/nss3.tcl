@@ -156,11 +156,6 @@ proc ::nss3::createRequest {action bucket object data contentType} {
             setParam method DELETE
             setParam resource /${bucket}
         }
-        default {
-            set msg "Invalid action: ${action}. Should be: createBucket "
-            append msg "writeObject, getObject, deleteObject, or deleteBucket."
-            error $msg
-        }
     }
 
     set dateFormat "%a, %d %b %Y %T %Z"
@@ -172,18 +167,35 @@ proc ::nss3::createRequest {action bucket object data contentType} {
 
 proc ::nss3::queue args {
     set action [lindex $args 0]
+
+    lappend validActions createBucket writeObject
+    lappend validActions getObject deleteObject deleteBucket
+
+    if {[lsearch -exact $validActions $action] == -1} {
+        error "Invalid action \"${action}\". Should be: ${validActions}"
+    }
+
     set args [lrange $args 1 end]
     parseArgs argArray $args
 
-    foreach flag [list bucket object data contentType timeout] {
-       if {[info exists argArray(${flag})]} {
-           set $flag $argArray(${flag})
-           continue
-       }
-       set $flag ""
+    set validFlags [list bucket object data contentType timeout]
+
+    foreach flag [array names argArray] {
+        if {[lsearch -exact $validFlags $flag] == -1} {
+            error "Invalid flag \"${flag}\". Should be: ${validFlags}"
+        }
     }
 
+    foreach flag [list bucket object data contentType timeout] {
+        if {![info exists argsArray(${flag})]} {
+            set $flag ""
+            continue
+        }
+        set $flag $argsArray(${flag})
+    }
+   
     createRequest $action $bucket $object $data $contentType
+
     set requestHeaders [ns_set create]
 
     foreach header [headerNames] {
@@ -209,17 +221,36 @@ proc ::nss3::queue args {
     return [eval $command]
 }
 
-proc ::nss3::wait {token resultVarName statusVarName {headerSetId ""}} {
-    upvar $resultVarName resultVar
-    upvar $statusVarName statusVar
+proc ::nss3::wait args {
+    set token [lindex $args 0]
+    set flags [lrange $args 1 end]
+
+    parseArgs flagsArray $flags
+    set validFlags [list result status headers]
+
+    foreach flag [array names flagsArray] {
+        if {[lsearch -exact $validFlags $flag] == -1} {
+            error "Invalid flag \"${flag}\". Should be: ${validFlags}."
+        }
+    }
 
     lappend command ns_http wait
 
-    if {[string length [string trim $headerSetId]]} {
-        lappend command -headers $headerSetId
+    if {[info exists flagsArray(result)]} {
+        upvar $flagsArray(result) resultVar
+        lappend command -result resultVar
     }
 
-    lappend command -result resultVar -status statusVar $token
+    if {[info exists flagsArray(status)]} {
+        upvar $flagsArray(status) statusVar
+        lappend command -status statusVar
+    }
+
+    if {[info exists flagsArray(headers)]} {
+        lappend command -headers $flagsArray(headers)
+    }
+
+    lappend command $token
 
     return [eval $command]
 }

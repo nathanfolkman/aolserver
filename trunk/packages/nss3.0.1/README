@@ -55,7 +55,7 @@ USAGE
 
     Create a bucket:
 
-    nscp 4> ::nss3::queue createBucket mynewbucket
+    nscp 4> ::nss3::queue createBucket -bucket mynewbucket
     http0
     nscp 5> ::nss3::wait http0 result status
     1
@@ -66,7 +66,7 @@ USAGE
 
     Write an object:
 
-    nscp 8> ::nss3::queue writeObject mynewbucket mynewobject "this is my data"
+    nscp 8> ::nss3::queue writeObject -bucket mynewbucket -object mynewobject -data "this is my data"
     http0
     nscp 9> ::nss3::wait http0 result status
     1
@@ -77,7 +77,7 @@ USAGE
 
     Get an object:
 
-    nscp 12> ::nss3::queue getObject mynewbucket mynewobject
+    nscp 12> ::nss3::queue getObject -bucket mynewbucket -object mynewobject
     http0
     nscp 13> ::nss3::wait http0 result status
     1
@@ -88,7 +88,7 @@ USAGE
 
     List a bucket:
 
-    nscp 16> ::nss3::queue getObject mynewbucket
+    nscp 16> ::nss3::queue getObject -bucket mynewbucket
     http0
     nscp 17> ::nss3::wait http0 result status
     1
@@ -100,7 +100,7 @@ USAGE
 
     Delete an object:
 
-    nscp 20> ::nss3::queue deleteObject mynewbucket mynewobject
+    nscp 20> ::nss3::queue deleteObject -bucket mynewbucket -object mynewobject
     http0
     nscp 21> ::nss3::wait http0 result status
     1
