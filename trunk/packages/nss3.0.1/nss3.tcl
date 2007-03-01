@@ -129,6 +129,9 @@ proc ::nss3::buildAuthHeader {} {
 }
 
 proc ::nss3::createRequest {action bucket object data contentType} {
+    if {![string length $contentType]} {
+        set contentType text/plain
+    }
     switch -exact $action {
         createBucket {
             setParam method PUT
