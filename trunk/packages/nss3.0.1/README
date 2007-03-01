@@ -43,7 +43,7 @@ load the package:
     nscp 2> ::nss3::setConfig publicKey "xxxxxxxxxxxxxxxxxxxx" 
     nscp 3> ::nss3::setConfig privateKey "xxxxxxxxxxxxxxxxxxxx"
 
-    You can also sue the setConfig command to toggle debugging 
+    You can also use the setConfig command to toggle debugging 
     and set a new default timeout. The current default timeout is 1 sec.
     A -timeout flag is provided on the queue and request commands which
     override the default setting for individual requests:
@@ -64,7 +64,16 @@ return the result. -status and -headers are also provided. -headers
 is a setId created by ns_set create. 
 
 There is also a ::nss3::request command that combines the two if async 
-is not needed. The following examples use queue and wait.
+is not needed. You can use issue -flags to any command to get a list of flags:
+
+     ::nss3::queue -flags
+     -bucket -object -data -contentType -timeout
+
+     ::nss3::wait -flags
+     -result -status -headers
+
+     ::nss3::request -flags
+     -bucket -object -data -contentType -timeout -result -status -headers
 
 4.1 Create a bucket
 -------------------
