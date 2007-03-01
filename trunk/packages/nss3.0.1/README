@@ -17,7 +17,7 @@ This package is still in development.  Be sure to update often.
 ---------------
     1. AOLserver4.5
     2. TCL 8.4 or greater
-    3. tcllib
+    3. tcllib (http://tcllib.sourceforge.net/)
         - sha1
         - md5
         - base64
