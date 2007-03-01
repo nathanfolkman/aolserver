@@ -50,8 +50,7 @@ package provide nss3 0.1
 namespace eval ::nss3:: {
     variable config
     set config(host) http://s3.amazonaws.com
-    set config(timeout) 2
-    set config(debug) 0
+    set config(debug) 1
 
     namespace export queue
     namespace export wait
@@ -147,10 +146,15 @@ proc ::nss3::createRequest {action bucket object data contentType} {
         getObject {
             setParam method GET
             setParam resource /${bucket}/${object}
+            setParam resource [string trimright [getParam resource] "/"]
         }
-        deleteObject {
+        delete {
+            set resource [list $bucket]
+            if {[string length $object]} {
+                lappend resource $object
+            }
             setParam method DELETE
-            setParam resource /${bucket}/${object}
+            setParam resource /[join $resource "/"]
         }
         deleteBucket {
             setParam method DELETE
@@ -169,18 +173,18 @@ proc ::nss3::queue args {
     set action [lindex $args 0]
 
     lappend validActions createBucket writeObject
-    lappend validActions getObject deleteObject deleteBucket
+    lappend validActions getObject delete
 
     if {[lsearch -exact $validActions $action] == -1} {
         error "Invalid action \"${action}\". Should be: ${validActions}"
     }
 
     set args [lrange $args 1 end]
-    parseArgs argArray $args
+    parseArgs argsArray $args
 
     set validFlags [list bucket object data contentType timeout]
 
-    foreach flag [array names argArray] {
+    foreach flag [array names argsArray] {
         if {[lsearch -exact $validFlags $flag] == -1} {
             error "Invalid flag \"${flag}\". Should be: ${validFlags}"
         }
@@ -204,7 +208,11 @@ proc ::nss3::queue args {
     }
 
     lappend command ns_http queue -method [getParam method] 
-    lappend command -headers $requestHeaders -body [getParam body]
+    lappend command -headers $requestHeaders 
+
+    if {[string length [getHeader Content-Length]]} {
+        lappend command -body [getParam body]
+    }
 
     if {[string is int -strict $timeout]} {
         lappend command -timeout $timeout
