@@ -77,6 +77,10 @@ proc ::nss3::queue args {
         lappend command -body [::nss3::getParam body]
     }
 
+    if {![string is int -strict $timeout]} {
+        set timeout [::nss3::getConfig timeout] 
+    }
+
     if {[string is int -strict $timeout]} {
         lappend command -timeout $timeout
     }
