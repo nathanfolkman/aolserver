@@ -129,7 +129,7 @@ proc ::nss3::buildAuthHeader {} {
     return "AWS [getConfig publicKey]:${signature}"
 }
 
-proc ::nss3::createRequest {action bucket {object ""} {data ""} {contentType ""}} {
+proc ::nss3::createRequest {action bucket object data contentType} {
     switch -exact $action {
         createBucket {
             setParam method PUT
@@ -170,7 +170,19 @@ proc ::nss3::createRequest {action bucket {object ""} {data ""} {contentType ""}
     setHeader Authorization [buildAuthHeader]
 }
 
-proc ::nss3::queue {action bucket {object ""} {data ""} {contentType "text/plain"}} {
+proc ::nss3::queue args {
+    set action [lindex $args 0]
+    set args [lrange $args 1 end]
+    parseArgs argArray $args
+
+    foreach flag [list bucket object data contentType timeout] {
+       if {[info exists argArray(${flag})]} {
+           set $flag $argArray(${flag})
+           continue
+       }
+       set $flag ""
+    }
+
     createRequest $action $bucket $object $data $contentType
     set requestHeaders [ns_set create]
 
@@ -181,7 +193,11 @@ proc ::nss3::queue {action bucket {object ""} {data ""} {contentType "text/plain
 
     lappend command ns_http queue -method [getParam method] 
     lappend command -headers $requestHeaders -body [getParam body]
-    lappend command -timeout [getConfig timeout]
+
+    if {[string is int -strict $timeout]} {
+        lappend command -timeout $timeout
+    }
+
     lappend command [getConfig host][getParam resource]
   
     if {[debug]} {
@@ -250,4 +266,26 @@ proc ::nss3::printRequest {} {
 proc ::nss3::clearRequest {} {
     global request
     array unset request
+}
+
+proc ::nss3::parseArgs {arrayName argList} {
+    upvar $arrayName argsArr
+
+    set i 0
+    set args [split $argList]
+
+    foreach arg $args {
+        if {[regexp {^-([A-Z][a-z])*} $arg]} {
+            set value [lindex $args [expr $i + 1]]
+            set key [string range $arg 1 end]
+
+            if {[regexp {^-([A-Z][a-z])*} $value]} {
+                set value ""
+            }
+
+            set argsArr($key) $value
+        }
+
+        incr i
+    }
 }
