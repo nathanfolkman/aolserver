@@ -1,3 +1,4 @@
+#
 # The contents of this file are subject to the AOLserver Public License
 # Version 1.1 (the "License"); you may not use this file except in
 # compliance with the License. You may obtain a copy of the License at
@@ -38,6 +39,7 @@
 # 
 # The only procs that are public are nss3::queue and nss3::wait.  The other 
 # procs are internal and should be considered private.
+#
 
 package require sha1
 package require md5
@@ -45,7 +47,7 @@ package require base64
 
 package provide nss3 0.1
 
-namespace eval nss3 {
+namespace eval ::nss3:: {
     variable config
     set config(host) http://s3.amazonaws.com
     set config(timeout) 2 
@@ -55,12 +57,12 @@ namespace eval nss3 {
     namespace export wait
 }
 
-proc nss3::setConfig {name value} {
+proc ::nss3::setConfig {name value} {
     variable config
     set config(${name}) $value
 }
 
-proc nss3::getConfig {name} {
+proc ::nss3::getConfig {name} {
     variable config
     if {![info exist config(${name})]} {
         return ""
@@ -68,12 +70,12 @@ proc nss3::getConfig {name} {
     return $config(${name})
 }
 
-proc nss3::setParam {name value} {
+proc ::nss3::setParam {name value} {
     global request
     set request(param.${name}) $value 
 }
 
-proc nss3::getParam {name} {
+proc ::nss3::getParam {name} {
     global request 
     if {![info exist request(param.${name})]} {
         return ""
@@ -81,12 +83,12 @@ proc nss3::getParam {name} {
     return $request(param.${name})
 }
 
-proc nss3::setHeader {name value} {
+proc ::nss3::setHeader {name value} {
     global request
     set request(header.${name}) $value
 }
 
-proc nss3::getHeader {name} {
+proc ::nss3::getHeader {name} {
     global request
     if {![info exist request(header.${name})]} {
         return ""
@@ -94,7 +96,7 @@ proc nss3::getHeader {name} {
     return $request(header.${name})
 }
 
-proc nss3::buildAuthHeader {} {
+proc ::nss3::buildAuthHeader {} {
     foreach param [list method body resource] {
         set $param [getParam $param]
     }
@@ -127,7 +129,7 @@ proc nss3::buildAuthHeader {} {
     return "AWS [getConfig publicKey]:${signature}"
 }
 
-proc nss3::createRequest {action bucket {object ""} {data ""}} {
+proc ::nss3::createRequest {action bucket {object ""} {data ""}} {
     switch -exact $action {
         createBucket {
             setParam method PUT
@@ -167,7 +169,7 @@ proc nss3::createRequest {action bucket {object ""} {data ""}} {
     setHeader Authorization [buildAuthHeader]
 }
 
-proc nss3::queue {action bucket {object ""} {data ""}} {
+proc ::nss3::queue {action bucket {object ""} {data ""}} {
     createRequest $action $bucket $object $data
     set requestHeaders [ns_set create]
 
@@ -190,7 +192,7 @@ proc nss3::queue {action bucket {object ""} {data ""}} {
     return [eval $command]
 }
 
-proc nss3::wait {token resultVarName statusVarName {headerSetId ""}} {
+proc ::nss3::wait {token resultVarName statusVarName {headerSetId ""}} {
     upvar $resultVarName resultVar
     upvar $statusVarName statusVar
 
@@ -205,14 +207,14 @@ proc nss3::wait {token resultVarName statusVarName {headerSetId ""}} {
     return [eval $command]
 }
 
-proc nss3::debug {} {
+proc ::nss3::debug {} {
     if {![string length [set v [getConfig debug]]] || ![string is int $v]} {
         return 0
     }
     return $v
 }
 
-proc nss3::headerNames {{pattern ""}} {
+proc ::nss3::headerNames {{pattern ""}} {
     global request
     lappend command array names request
 
@@ -232,7 +234,7 @@ proc nss3::headerNames {{pattern ""}} {
     return $returnList
 }
 
-proc nss3::printRequest {} {
+proc ::nss3::printRequest {} {
     global request
     set output [list]
 
@@ -244,7 +246,7 @@ proc nss3::printRequest {} {
     return [join $output \n]
 }
 
-proc nss3::clearRequest {} {
+proc ::nss3::clearRequest {} {
     global request
     array unset request
 }
