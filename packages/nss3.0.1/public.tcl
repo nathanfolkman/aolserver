@@ -1,4 +1,3 @@
-
 # The contents of this file are subject to the AOLserver Public License
 # Version 1.1 (the "License"); you may not use this file except in
 # compliance with the License. You may obtain a copy of the License at
@@ -48,8 +47,6 @@ proc ::nss3::queue args {
 
     ::nss3::parseArgs flagsArray [lrange $args 1 end] 
 
-    set validFlags [list bucket object data contentType timeout]
-
     foreach flag [array names flagsArray] {
         if {[lsearch -exact $validFlags $flag] == -1} {
             set display "-[join $validFlags " -"]"
@@ -57,7 +54,7 @@ proc ::nss3::queue args {
         }
     }
 
-    foreach flag [list bucket object data contentType timeout] {
+    foreach flag $validFlags {
         if {![info exists flagsArray(${flag})]} {
             set $flag ""
             continue
