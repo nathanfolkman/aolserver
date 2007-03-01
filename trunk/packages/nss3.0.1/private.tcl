@@ -153,16 +153,14 @@ proc ::nss3::headerNames {{pattern ""}} {
     return $returnList
 }
 
-proc ::nss3::printRequest {} {
+proc ::nss3::logRequest {} {
     global request
     set output [list]
 
     foreach key [lsort [array names request]] {
         set value $request(${key})
-        lappend output "${key}: ${value}"
+        ns_log debug "nss3: ${key}: ${value}"
     }
-
-    return [join $output \n]
 }
 
 proc ::nss3::clearRequest {} {
