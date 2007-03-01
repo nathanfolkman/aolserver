@@ -1,10 +1,9 @@
 
-
 1. Introduction
 2. Requirements
 3. Installing
 4. Running
-5. Usage 
+5. Examples
 
 
 1. Introduction
@@ -38,7 +37,7 @@ load the package:
 
     nscp 1> package require nss3
 
-    Then configure the package to use your own public and private keys. 
+--> *** Then configure the package to use your own public and private keys. 
     These values are kept for the life of the thread.  If done at start up 
     in the main thread, the values will persist for the life of the server.
     They will also be included in any threads spawned by the main thread.
@@ -47,8 +46,8 @@ load the package:
     nscp 3> ::nss3::setConfig privateKey "xxxxxxxxxxxxxxxxxxxx"
 
 
-4. Usage
---------
+4. Examples
+-----------
 The ::nss3::wait command works just like the the ns_http wait command.
 You can use the -result flag to set the result in a variable and get a
 1 or 0 back, or you can not set the result flag and the proc will
