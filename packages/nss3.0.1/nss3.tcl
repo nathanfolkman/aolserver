@@ -49,7 +49,7 @@ namespace eval nss3 {
     variable config
     set config(host) http://s3.amazonaws.com
     set config(timeout) 2 
-    set config(debug) 1
+    set config(debug) 0
 
     namespace export queue
     namespace export wait
