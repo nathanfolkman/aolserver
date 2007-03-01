@@ -16,7 +16,8 @@ proc ::nss3::queue args {
 
     foreach flag [array names flagsArray] {
         if {[lsearch -exact $validFlags $flag] == -1} {
-            error "Invalid flag \"${flag}\". Should be: ${validFlags}"
+            set display "-[join $validFlags " -"]"
+            error "Invalid flag \"-${flag}\". Should be: ${display}"
         }
     }
 
@@ -67,12 +68,13 @@ proc ::nss3::wait args {
     set token [lindex $args 0]
     set flags [lrange $args 1 end]
 
-    parseArgs flagsArray $flags
+    ::nss3::parseArgs flagsArray $flags
     set validFlags [list result status headers]
 
     foreach flag [array names flagsArray] {
         if {[lsearch -exact $validFlags $flag] == -1} {
-            error "Invalid flag \"${flag}\". Should be: ${validFlags}."
+            set display "-[join $validFlags " -"]"
+            error "Invalid flag \"-${flag}\". Should be: ${display}"
         }
     }
 
