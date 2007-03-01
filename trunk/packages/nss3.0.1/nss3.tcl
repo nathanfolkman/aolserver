@@ -29,7 +29,8 @@
 #
 # This package uses a namespace variable to hold configuration options. These 
 # options will persist for the life of the thread or conn. See the README file
-# for more information about setting configuration options.
+# for more information about setting the configuration options after runnign 
+# package require.
 # 
 # The package also uses a global array to hold the current request parameters 
 # and headers.  This array will be cleaned up after the connection.  It is also 
