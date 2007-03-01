@@ -8,4 +8,4 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded nss3 0.1 [list source [file join $dir nss3.tcl]]
+package ifneeded nss3 0.1 [list source [file join $dir init.tcl]]\n[list source [file join $dir private.tcl]]\n[list source [file join $dir public.tcl]]
