@@ -38,7 +38,7 @@ load the package:
 --> *** Then configure the package to use your own public and private keys. 
     These values are kept for the life of the thread.  If done at start up 
     in the main thread, the values will persist for the life of the server.
-    They will also be included in any threads spawned by the main thread.
+    They will also be included in any threads spawned by the main thread:
 
     nscp 2> ::nss3::setConfig publicKey "xxxxxxxxxxxxxxxxxxxx" 
     nscp 3> ::nss3::setConfig privateKey "xxxxxxxxxxxxxxxxxxxx"
@@ -55,7 +55,7 @@ load the package:
 4. Examples
 -----------
 The ::nss3::queue command is used to queue a request to the S3 service.
-It uses ns_http under the covers. use -flags to get a list of flags.
+It uses ns_http under the covers.
 
 The ::nss3::wait command works just like the the ns_http wait command.
 You can use the -result flag to set the result in a variable and get a
@@ -64,7 +64,8 @@ return the result. -status and -headers are also provided. -headers
 is a setId created by ns_set create. 
 
 There is also a ::nss3::request command that combines the two if async 
-is not needed. You can use issue -flags to any command to get a list of flags:
+is not needed. You can use issue -flags to any command to get a list of 
+valid flags:
 
      ::nss3::queue -flags
      -bucket -object -data -contentType -timeout
