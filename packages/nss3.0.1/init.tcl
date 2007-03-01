@@ -35,6 +35,8 @@ namespace eval ::nss3:: {
     variable config
     set config(host) http://s3.amazonaws.com
     set config(debug) 1
+    set config(timeout) 1 ; # override with -timeout flag
+                          ; # when usiong ::nss3::queue.
 
     namespace export queue
     namespace export wait
