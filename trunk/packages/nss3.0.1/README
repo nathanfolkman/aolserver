@@ -52,12 +52,17 @@ RUNNING
 
 USAGE
 -----
+    The ::nss3::wait command works just like the the ns_http wait command.
+    You can use the -result flag to set the result in a variable and get a
+    1 or 0 back, or you can not set the result flag and get the proc will
+    return the result. -status and -headers are also valid flags. -headers
+    is a setId created by ns_set create.
 
     Create a bucket:
 
     nscp 4> ::nss3::queue createBucket -bucket mynewbucket
     http0
-    nscp 5> ::nss3::wait http0 result status
+    nscp 5> ::nss3::wait http0 -result result -status status
     1
     nscp 6> set result 
 
@@ -68,7 +73,7 @@ USAGE
 
     nscp 8> ::nss3::queue writeObject -bucket mynewbucket -object mynewobject -data "this is my data"
     http0
-    nscp 9> ::nss3::wait http0 result status
+    nscp 9> ::nss3::wait http0 -result result -status status
     1
     nscp 10> set result
 
@@ -79,7 +84,7 @@ USAGE
 
     nscp 12> ::nss3::queue getObject -bucket mynewbucket -object mynewobject
     http0
-    nscp 13> ::nss3::wait http0 result status
+    nscp 13> ::nss3::wait http0 -result result -status status
     1
     nscp 14> set result
     this is my data
@@ -90,7 +95,7 @@ USAGE
 
     nscp 16> ::nss3::queue getObject -bucket mynewbucket
     http0
-    nscp 17> ::nss3::wait http0 result status
+    nscp 17> ::nss3::wait http0 -result result -status status
     1
     nscp 18> set result
     <?xml version="1.0" encoding="UTF-8"?>
@@ -102,7 +107,7 @@ USAGE
 
     nscp 20> ::nss3::queue deleteObject -bucket mynewbucket -object mynewobject
     http0
-    nscp 21> ::nss3::wait http0 result status
+    nscp 21> ::nss3::wait http0 -result result -status status
     1
     nscp 22> set result 
 
