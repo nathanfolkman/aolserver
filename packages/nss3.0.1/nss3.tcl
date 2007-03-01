@@ -311,7 +311,8 @@ proc ::nss3::parseArgs {arrayName argList} {
     upvar $arrayName argsArr
 
     set i 0
-    set args [split $argList]
+    # set args [split $argList]
+    set args $argList
 
     foreach arg $args {
         if {[regexp {^-([A-Z][a-z])*} $arg]} {
