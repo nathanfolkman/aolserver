@@ -9,7 +9,6 @@
 1. Introduction
 ---------------
 This package installs a Tcl API used to send requests to the Amazon S3 service.
-This package is still in development.  Be sure to update often.
 
 
 2. Requirements 
