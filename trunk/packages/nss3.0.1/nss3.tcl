@@ -33,8 +33,8 @@
 # for more information about setting the configuration options after runnign 
 # package require.
 # 
-# The package also uses a global array to hold the current request parameters 
-# and headers.  This array will be cleaned up after the connection.  It is also 
+# The package also uses a global array to hold the request parameters and
+# headers.  This array will be cleaned up after the connection.  It is also 
 # explicitly cleaned up at the end of nss3::queue by nss3::cleanRequest.
 # 
 # The only procs that are public are nss3::queue and nss3::wait.  The other 
@@ -50,7 +50,7 @@ package provide nss3 0.1
 namespace eval ::nss3:: {
     variable config
     set config(host) http://s3.amazonaws.com
-    set config(timeout) 2 
+    set config(timeout) 2
     set config(debug) 0
 
     namespace export queue
@@ -129,7 +129,7 @@ proc ::nss3::buildAuthHeader {} {
     return "AWS [getConfig publicKey]:${signature}"
 }
 
-proc ::nss3::createRequest {action bucket {object ""} {data ""}} {
+proc ::nss3::createRequest {action bucket {object ""} {data ""} {contentType ""}} {
     switch -exact $action {
         createBucket {
             setParam method PUT
@@ -139,7 +139,7 @@ proc ::nss3::createRequest {action bucket {object ""} {data ""}} {
             setParam method PUT
             setParam body $data
             setParam resource /${bucket}/${object}
-            setHeader Content-Type text/plain
+            setHeader Content-Type $contentType
             setHeader x-amz-meta-title $object
             setHeader Content-md5 [::base64::encode [::md5::md5 $data]] 
             setHeader Content-Length [string length $data]    
@@ -165,12 +165,13 @@ proc ::nss3::createRequest {action bucket {object ""} {data ""}} {
 
     set dateFormat "%a, %d %b %Y %T %Z"
     set timestamp [clock format [clock seconds] -format $dateFormat]
+
     setHeader Date $timestamp
     setHeader Authorization [buildAuthHeader]
 }
 
-proc ::nss3::queue {action bucket {object ""} {data ""}} {
-    createRequest $action $bucket $object $data
+proc ::nss3::queue {action bucket {object ""} {data ""} {contentType "text/plain"}} {
+    createRequest $action $bucket $object $data $contentType
     set requestHeaders [ns_set create]
 
     foreach header [headerNames] {
@@ -180,7 +181,7 @@ proc ::nss3::queue {action bucket {object ""} {data ""}} {
 
     lappend command ns_http queue -method [getParam method] 
     lappend command -headers $requestHeaders -body [getParam body]
-    lappend command -timeout [getConfig timeout] 
+    lappend command -timeout [getConfig timeout]
     lappend command [getConfig host][getParam resource]
   
     if {[debug]} {
