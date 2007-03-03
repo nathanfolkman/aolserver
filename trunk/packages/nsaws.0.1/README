@@ -5,7 +5,7 @@ This distribution includes packages for communicating with the Amazon Web
 Services.  The aws package is the core package. The aws API is used to create a 
 request object, set params, queue the request, wait for the request, and 
 destroy the request object. The other packages provide convenient 
-service-specific wrappers for the aws API (COMING SOON).
+service-specific wrappers for the aws API.
 
 
 2. Installing
@@ -39,7 +39,7 @@ timeout param set in the request object.
 4. Making S3 requests  
 
 The s3 package provides convenient wrappers to the aws API.  See the s3 README
-file for more information (COMING SOON).
+file for more information.
 
 4.1 Create Bucket
 
