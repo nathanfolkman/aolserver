@@ -1,0 +1,6 @@
+
+This distribution includes packages for communicating with the Amazon Web
+Services.  The aws package is the core package. The aws API is used to create a
+request object, set params, queue the request, wait for the request, and
+destroy the request object. The other packages provide convenient
+service-specific wrappers for the aws API (COMING SOON).
