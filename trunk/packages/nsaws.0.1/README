@@ -1,0 +1,253 @@
+
+1. Introduction
+
+This distribution includes packages for communicating with the Amazon Web
+Services.  The aws package is the core package. The aws API is used to create a 
+request object, set params, queue the request, wait for the request, and 
+destroy the request object. The other packages provide convenient 
+service-specific wrappers for the aws API (COMING SOON).
+
+
+2. Installing
+
+Copy the distribution directory to the directory that contains the Tcl lib
+AOlserver is linked against:
+
+    % cp -r nsaws.x.x /usr/local/aolserver/lib
+
+
+3. Running the aws package
+
+Use the Tcl "package" command to load the package, then configure the package
+to use your own public and private keys.  These settings persist for the life
+of the interpreter. By doing this in the main thread, the conns and other
+threads will clone these settings when created.
+
+    package require aws
+    aws::setConfig publicKey xxxxxxxxxxxxxxxxxx
+    aws::setConfig privateKey xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+You can also set the default request timeout and debug flag. When debug is 
+enabled the request params and headers will be logged in the server log when 
+the request is queued. The default timeout will be used if there is no
+timeout param set in the request object.
+
+    aws::setConfig timeout 1 ; # "timeout" request param will override
+    aws::setConfig debug 1
+
+
+4. Making S3 requests  
+
+The s3 package provides convenient wrappers to the aws API.  See the s3 README
+file for more information (COMING SOON).
+
+4.1 Create Bucket
+
+    nscp 1> aws::createRequest
+    aws0
+
+    nscp 2> aws::setParam aws0 method POST
+    POST
+
+    nscp 3> aws::setParam aws0 host http://s3.amazonaws.com
+    http://s3.amazonaws.com
+
+    nscp 4> aws::setParam aws0 resource /mynewbucket
+    /mynewbucket
+
+    nscp 5> aws::queue aws0
+    http0
+
+    nscp 6> aws::wait http0 result status [set setId [ns_set create]]
+    1
+
+    nscp 7> set result ; # no result for PUT
+
+    nscp 8> set status
+    200
+
+    nscp 9> ns_set print $setId ; # writes to server log
+
+4.2 Write object
+
+    nscp 1> aws::createRequest
+    aws0
+
+    nscp 2> aws::setParam aws0 method PUT 
+    PUT
+
+    nscp 3> aws::setParam aws0 host http://s3.amazonaws.com
+    http://s3.amazonaws.com
+
+    nscp 4> aws::setParam aws0 resource /mynewbucket/mynewobject
+    /mynewbucket/mynewobject
+
+    nscp 5> aws::setParam aws0 data "Hello there"
+    Hello there
+
+    nscp 6> aws::setHeader aws0 Content-Type text/plain  
+    text/plain
+
+    nscp 7> aws::setHeader aws0 x-amz-meta-author Michael
+    Michael
+
+    nscp 8> aws::setHeader aws0 x-amz-meta-foo foo
+    foo 
+
+    nscp 9> aws::setHeader aws0 x-amz-meta-bar bar
+    bar
+
+    nscp 10> aws::queue aws0
+    http0
+
+    nscp 11> aws::wait http0 result status [set setId [ns_set create]]
+    1
+
+4.3 Get object
+
+    nscp 1> aws::createRequest
+    aws0
+
+    nscp 2> aws::setParam aws0 method GET
+    GET
+
+    nscp 3>  aws::setParam aws0 host http://s3.amazonaws.com
+    http://s3.amazonaws.com
+
+    nscp 4> aws::setParam aws0 resource /mynewbucket/mynewobject
+    /mynewbucket/mynewobject
+
+    nscp 5> aws::queue aws0
+    http0
+
+    nscp 8> aws::wait http0 result status [set setId [ns_set create]]
+    1
+
+    nscp 9> set result
+    Hello there
+
+    nscp 10> set status
+    200
+
+    nscp 11> ns_set print $setId ; # Writes to server log
+    HTTP/1.1 200 OK:
+    x-amz-id-2 = wYK1i877LSN7AYG9OQzjV+DvB3KKhd+XHeN/9iEy+HhIbFgjWUR
+    x-amz-request-id = FC0D9479C8B
+    date = Sat, 03 Mar 2007 05:22:33 GMT
+    x-amz-meta-author = Michael
+    x-amz-meta-bar = bar
+    x-amz-meta-foo = foo
+    last-modified = Sat, 03 Mar 2007 05:16:02 GMT
+    etag = "e8ea7a1e98480f3df4644de"
+    content-type = binary/octet-stream
+    content-length = 11
+    connection = keep-alive
+    server = AmazonS3
+
+4.4 List bucket contents
+
+    nscp 1> aws::createRequest
+    aws0
+
+    nscp 2> aws::setParam aws0 method GET
+    GET
+
+    nscp 3> aws::setParam aws0 host http://s3.amazonaws.com
+    http://s3.amazonaws.com
+
+    nscp 4> aws::setParam aws0 resource /mynewbucket
+    /mynewbucket
+
+    nscp 5> aws::queue aws0
+    http0
+
+    nscp 6> aws::wait http0 result status [set setId [ns_set create]]
+    1
+
+    nscp 7> set result
+    <?xml version="1.0" encoding="UTF-8"?>...
+
+    nscp 9> set status
+    200
+
+    nscp 10> ns_set print $setId
+    HTTP/1.1 200 OK:
+    x-amz-id-2 = wjj5ByKPGIH9byqjChyFvfmD0VC7CsdqRcEDDA2AsluXU1
+    x-amz-request-id = AC3118189
+    date = Sat, 03 Mar 2007 05:37:39 GMT
+    content-type = application/xml
+    connection = close
+    server = AmazonS3
+
+4.5 Get object headers
+
+    nscp 1> aws::createRequest
+    aws0
+
+    nscp 2> aws::setParam aws0 method HEAD
+    HEAD
+
+    nscp 3> aws::setParam aws0 host http://s3.amazonaws.com
+    http://s3.amazonaws.com
+
+    nscp 4> aws::setParam aws0 resource /mynewbucket/mynewobject
+    /mynewbucket/mynewobject
+
+    nscp 5> aws::queue aws0
+    http0
+
+    nscp 6> aws::wait http0 result status [set setId [ns_set create]]
+    1
+
+    nscp 7> set result
+
+    nscp 8> set status
+    200
+
+    nscp 9> ns_set print $setId 
+    HTTP/1.1 200 OK:
+    x-amz-id-2 = rr6mJu+UshZjW2hR2l/usw3Ir/Fr7eNmyFqy/GtT+nSb
+    x-amz-request-id = 20020350E6
+    date = Sat, 03 Mar 2007 05:44:38 GMT
+    x-amz-meta-author = Michael
+    x-amz-meta-bar = bar
+    x-amz-meta-foo = foo
+    last-modified = Sat, 03 Mar 2007 05:16:02 GMT
+    etag = "e8ea7a8d193e4644de"
+    content-type = binary/octet-stream
+    content-length = 11
+    connection = keep-alive
+    server = AmazonS3
+
+4.6 Delete a resource
+
+    nscp 1> aws::createRequest 
+    aws0
+
+    nscp 2> aws::setParam aws0 method DELETE
+    DELETE
+
+    nscp 3> aws::setParam aws0 host http://s3.amazonaws.com
+    http://s3.amazonaws.com
+
+    nscp 4> aws::setParam aws0 resource /mynewbucket/mynewobject
+    /mynewbucket/mynewobject
+
+    nscp 5> aws::queue aws0
+    http0
+
+    nscp 6> aws::wait http0 result status [set setId [ns_set create]]
+    1
+
+    nscp 7> set result
+
+    nscp 8> set status
+    204
+
+    nscp 9> ns_set print $setId
+    HTTP/1.1 204 No Content:
+    x-amz-id-2 = BMBUoyNyUxZrney7/1P5hFzQlSE/DVn8EnsDcKBhxUTfmFz0i/xVk
+    x-amz-request-id = 84BFE81AE
+    date = Sat, 03 Mar 2007 05:55:01 GMT
+    connection = keep-alive
+    server = AmazonS3
