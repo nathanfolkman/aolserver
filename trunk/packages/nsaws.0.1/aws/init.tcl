@@ -139,6 +139,39 @@ proc aws::logRequest {token} {
     }
 }
 
+proc aws::queueCurl {token} {
+    aws::validateToken $token
+    variable $token
+    
+    set outputHeaders "Expect:"
+    
+    foreach name [aws::headerNames $token] {
+        lappend outputHeaders "$name: [aws::getHeader $token $name]"
+    }
+    
+    set curl [::curl::init]
+    
+    if {[string length [aws::getHeader $token Content-Length]]} {
+        $curl configure -postfields [aws::getParam $token data]
+        $curl configure -postfieldssize [string length [aws::getParam $token data]]
+    }
+   
+    $curl configure -customrequest [aws::getParam $token method]
+    $curl configure -httpheader $outputHeaders
+    $curl configure -headervar headers
+    $curl configure -bodyvar body
+    $curl configure -stderr stderr
+    $curl configure -verbose 3
+    $curl configure -url [aws::getParam $token host][aws::getParam $token resource]
+    
+    set result [$curl perform]
+    
+    ns_log notice $body
+    
+    $curl cleanup
+    return $result
+}
+
 proc aws::buildSignature {token} {
     aws::validateToken $token
     variable $token
@@ -205,6 +238,8 @@ proc aws::queue {token} {
 
     # I might swap out ns_http for another transport
     set jobToken [aws::queueNsHttp $token]
+    #set jobToken [aws::queueCurl $token]
+    
 
     aws::destroyRequest $token
 
