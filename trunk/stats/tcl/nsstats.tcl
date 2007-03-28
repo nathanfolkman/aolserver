@@ -1,13 +1,9 @@
 ns_ictl package require nsstats
 
 set path "ns/server/nsstats"
-
 set enabled [ns_config -bool $path enabled "true"]
-set user [ns_config $path user "aolserver"]
-set password [ns_config $path password "stats"]
 
 nsstats::enable $enabled
-nsstats::setLogin $user $password
 
 #
 # Driver
@@ -46,3 +42,15 @@ nsstats::addColumn "threads" "sent" "Sent" "number"
 nsstats::addColumn "threads" "method" "Method" "string"
 nsstats::addColumn "threads" "url" "URL" "string"
 
+#
+# Locks
+#
+
+nsstats::addStat locks "Locks"
+
+nsstats::addColumn "locks" "name" "Name" "string"
+nsstats::addColumn "locks" "owner" "Owner" "string"
+nsstats::addColumn "locks" "id" "Id" "number"
+nsstats::addColumn "locks" "locks" "Locks" "number"
+nsstats::addColumn "locks" "busy" "Busy" "number"
+nsstats::addColumn "locks" "contention" "Contention" "number"
