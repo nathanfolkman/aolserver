@@ -2,13 +2,6 @@
 set stat [ns_adp_argv 1]
 set debug [ns_adp_argv 2]
 
-set user [ns_conn authuser]
-set password [ns_conn authpassword]
-
-if {[nsstats::authenticate $user $password] == 0} {
-    ns_returnunauthorized
-}
-
 if {![string length $debug]} {
     set debug "false"
 }
