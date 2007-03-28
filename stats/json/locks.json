@@ -1,0 +1,57 @@
+<%
+load /usr/local/aolserver/lib/libtcljson.dylib
+
+set stats [json.newObject]
+set headers [json.newObject]
+
+set colNames [nsstats::getColumns "locks"]
+
+foreach colName $colNames {
+	set colFields [nsstats::getColumn "locks" $colName]
+    set title [lindex $colFields 1]
+    set type [lindex $colFields 2]
+    
+    set header [json.newObject]
+    
+    json.objectAddObject $header "title" [json.newString $title]
+    json.objectAddObject $header "type" [json.newString $type]
+    
+    json.objectAddObject $headers $colName $header
+}
+
+json.objectAddObject $stats "headers" $headers 
+
+set rows [json.newArray]
+
+foreach lock [ns_info locks] {
+    set name    [lindex $lock 0]
+    set owner   [lindex $lock 1]
+    set id      [lindex $lock 2]
+    set nlock   [lindex $lock 3]
+    set nbusy   [lindex $lock 4]
+    
+    if {$nbusy == 0} {
+        set contention 0.0
+    } else {
+        set contention [expr double($nbusy*100.0/$nlock)]
+    }
+    
+    set row [json.newObject]
+    
+    json.objectAddObject $row "name" [json.newString $name]
+    json.objectAddObject $row "owner" [json.newString $owner]
+    json.objectAddObject $row "id" [json.newString $id]
+    json.objectAddObject $row "locks" [json.newInt $nlock]
+    json.objectAddObject $row "busy" [json.newInt $nbusy]
+    json.objectAddObject $row "contention" [json.newString $contention]
+    
+    json.arrayAddObject $rows $row
+}
+
+json.objectAddObject $stats "timestamp" [json.newString [ns_time]]
+json.objectAddObject $stats "rows" $rows
+
+ns_adp_trunc
+ns_adp_puts [json.objectToString $stats]
+ns_adp_break
+%>
