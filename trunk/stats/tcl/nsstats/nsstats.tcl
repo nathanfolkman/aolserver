@@ -3,7 +3,7 @@ namespace eval nsstats {
     
     variable Thread
     variable Sched
-	variable Columns
+    variable Columns
     
     set Thread(0)   "NS_OK"
     set Thread(-1)  "NS_ERROR"
@@ -68,24 +68,6 @@ namespace eval nsstats {
         }
         
         return $enabled
-    }
-    
-    proc setLogin {user password} {
-        nsv_set nsstats user $user
-        nsv_set nsstats password $password
-        
-        return 1
-    }
-    
-    proc authenticate {user password} {
-        set u [nsv_get nsstats user]
-        set p [nsv_get nsstats password]
-        
-        if {![string match $user $u] && ![string match $password $p]} {
-            return 0
-        } 
-        
-        return 1
     }
     
     proc addStat {name description} {
@@ -165,4 +147,3 @@ namespace eval nsstats {
 }
 
 package provide nsstats 1.0
-
