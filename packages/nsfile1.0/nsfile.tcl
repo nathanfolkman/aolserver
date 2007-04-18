@@ -33,7 +33,7 @@ namespace eval nsfile {
 
 proc ::nsfile::write {file contents} {
     set tmpFile [fileutil::tempfile]
-    fileutil::writeFile $tmpFile
+    fileutil::writeFile $tmpFile $contents
     file rename -force $tmpFile $file
     return 1
 }
