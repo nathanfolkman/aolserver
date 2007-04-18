@@ -265,11 +265,11 @@ proc ::nsrpc::send {host port packet responseArrayName {filesAgf ""}} {
 proc ::nsrpc::getCurlErrorAgf {errorCode} {
     switch -exact $errorCode {
         3 {
-            lappend errorAgf errorString "URL format error: ${server}/rpc"
+            lappend errorAgf errorString "URL format error"
             lappend errorAgf errorCode CURL_URL_FORMAT_ERROR
         }
         6 {
-            lappend errorAgf errorString "Could not resolve host: ${server}"
+            lappend errorAgf errorString "Could not resolve host"
             lappend errorAgf errorCode CURL_HOST_RESOLUTION_FAILED
         }
         7 {
@@ -281,7 +281,7 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
             lappend errorAgf errorCode CURL_FILE_READ_FAILED
         }
         default {
-            lappend errorAgf errorString "Untracked RPC failure: ${error}"
+            lappend errorAgf errorString "Untracked RPC failure"
             lappend errorAgf errorCode CURL_UNTRACKED_FAILURE
         }
     }
