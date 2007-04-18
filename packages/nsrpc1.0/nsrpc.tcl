@@ -197,11 +197,11 @@ proc ::nsrpc::isExported {command} {
 # Arguments:
 #     server: the evaluating server (with port): 
 #         http://${ip/domain}:${port}
-#     packet: The command with args in Tcl list format:
+#     command: The command with args in Tcl list format:
 #         [list ns_log notice "hello world"]
 #     responseArrayName: The name of the response array.
-#     filesAgf: files to be sent. The crated tmp file paths will replace
-#         the placeholders in the packet.
+#     filesAgf: files to be sent. The created tmp file paths will replace
+#         the placeholders in the commnd.
 #
 # Results:
 #     The HTTP reponse code is returned. The resultArray is upvared into 
@@ -210,9 +210,9 @@ proc ::nsrpc::isExported {command} {
 # Files Usage:
 #     There may be times when you want to send files to the remote server
 #     and use those files as args to the remote command. To do this, you first
-#     set a placeholder as an arg in the packet (E.g., tmpfile1).
+#     set a placeholder as an arg in the command (E.g., tmpfile1).
 #
-#         set packet [list ::file::copy tmpFile1 myNewFile.txt]
+#         set command [list ::file::copy tmpFile1 myNewFile.txt]
 #
 #     You then create the filesAgf using the placeholder name:
 #
@@ -220,9 +220,9 @@ proc ::nsrpc::isExported {command} {
 #
 #     When myOriginalFile.txt is sent to the remote server, it is placed in
 #     a tmp file (E.g., /private/temp/ae2jnhf) that path will replace the arg 
-#     "tmpFile1" in the packet.
+#     "tmpFile1" in the command.
 
-proc ::nsrpc::send {host port packet responseArrayName {filesAgf ""}} {
+proc ::nsrpc::send {host port command responseArrayName {filesAgf ""}} {
     upvar $responseArrayName responseArray
     variable curlHandle
 
@@ -234,7 +234,7 @@ proc ::nsrpc::send {host port packet responseArrayName {filesAgf ""}} {
 
     $curlHandle configure -url $url -post 1 -httpversion 1.0
     $curlHandle configure -httpheader [list "Connection: keep-alive"] 
-    $curlHandle configure -httppost [list name packet contents $packet]
+    $curlHandle configure -httppost [list name command contents $command]
     $curlHandle configure -bodyvar responseAgf -headervar responseHeaders
 
     if {[llength $filesAgf]} {
@@ -244,7 +244,7 @@ proc ::nsrpc::send {host port packet responseArrayName {filesAgf ""}} {
         }
     }
 
-    ns_log debug "rpc: send: ${packet}: ${url}"
+    ns_log debug "rpc: send: ${command}: ${url}"
 
     if {[catch {$curlHandle perform} errorCode]} {
         error [::nsrpc::getCurlErrorAgf $errorCode]
@@ -291,14 +291,14 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
 
 # ::nsrpc::do --
 #
-#     Evaluates the packet sent by ::nsrpc::send. This proc is registerd
+#     Evaluates the command sent by ::nsrpc::send. This proc is registerd
 #     by ::nsrpc::start and will handle all requests to /rpc/*
 #
 # Arguments:
 #     None
 #
 # Results:
-#     The "packet" post var is evaluated. The result is returned in the
+#     The command is evaluated. The result is returned in the
 #     HTTP response. If files were went - the tmp files will replace the
 #     the arg placeholders. See ::nsrpc::send for more info.
 #
@@ -308,14 +308,14 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
 proc ::nsrpc::do {} {
     ::nsrpc::setThreadName
     
-    if {![llength [set packet [ns_queryget packet]]]} {
-        lappend resultAgf errorString "packet not passed"
+    if {![llength [set command [ns_queryget command]]]} {
+        lappend resultAgf errorString "command not passed"
         lappend resultAgf errorCode RPC_MISSING_PACKET
         ns_return 500 text/plain $resultAgf
         return
     }
 
-    set commandName [lindex $packet 0]
+    set commandName [lindex $command 0]
 
     if {![llength [info commands $commandName]]} {
         lappend resultAgf errorString "invalid command: ${commandName}"
@@ -335,20 +335,20 @@ proc ::nsrpc::do {} {
         foreach arg [ns_querygetall file] {
             set tmpFile [ns_getformfile $arg]
             
-            if {[set index [lsearch -exact $packet $arg]] == -1} {
+            if {[set index [lsearch -exact $command $arg]] == -1} {
                 lappend resultAgf errorString "invalid file arg: ${arg}"
                 lappend resultAgf errorCode RPC_INVALID_FILE_ARGUMENT 
                 ns_return 500 text/plain $resultAgf
                 return
             }
 
-            set packet [lreplace $packet $index $index $tmpFile]
+            set command [lreplace $command $index $index $tmpFile]
         }
     }
 
-    ns_log debug "rpc: receive: ${packet}"
+    ns_log debug "rpc: receive: ${command}"
 
-    if {[catch {set result [eval $packet]} error]} {
+    if {[catch {set result [eval $command]} error]} {
         lappend resultAgf errorString $error
         lappend resultAgf errorInfo $::errorInfo
         lappend resultAgf errorCode $::errorCode
