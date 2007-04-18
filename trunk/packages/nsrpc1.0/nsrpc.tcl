@@ -266,23 +266,23 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
     switch -exact $errorCode {
         3 {
             lappend errorAgf errorString "URL format error: ${server}/rpc"
-            lappend errorAgf errorCode RPC_MALFORMED_URL
+            lappend errorAgf errorCode CURL_URL_FORMAT_ERROR
         }
         6 {
             lappend errorAgf errorString "Could not resolve host: ${server}"
-            lappend errorAgf errorCode RPC_RESOLVE_HOST_FAILED
+            lappend errorAgf errorCode CURL_HOST_RESOLUTION_FAILED
         }
         7 {
             lappend errorAgf errorString "Failed to connect to host"
-            lappend errorAgf errorCode RPC_CONNECTION_FAILED
+            lappend errorAgf errorCode CURL_HOST_CONNECTION_FAILED
         }
         26 {
             lappend errorAgf errorString "Could not read local file"
-            lappend errorAgf errorCode RPC_LOCAL_FILE_READ_FAILED
+            lappend errorAgf errorCode CURL_FILE_READ_FAILED
         }
         default {
             lappend errorAgf errorString "Untracked RPC failure: ${error}"
-            lappend errorAgf errorCode RPC_UNTRACKED_FAILURE
+            lappend errorAgf errorCode CURL_UNTRACKED_FAILURE
         }
     }
 
