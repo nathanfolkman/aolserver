@@ -14,8 +14,8 @@ namespace eval ::nsrpc {
 
 # ::nsrpc::nsInit --
 #
-#     Should be called when the package is required by AOLserver at startup.
-#     Calls ::nsrpc::start.
+#     Should be called when the package is first required by AOLserver at 
+#     startup. Calls ::nsrpc::start.
 #
 # Args:
 #     None
