@@ -1,0 +1,30 @@
+Installation:
+    Copy the nsrpcx.x directory to the AOLserver lib directory or a directory
+    listed in the Tcl $::auto_path variable:
+        
+        % cp -r ./nsrpc1.0 /usr/local/aolserver/lib
+
+Loading:
+    Load the package using ns_itcl and then run the nsInit proc:
+   
+        server1:nscp 1> ns_ictl package require nsrpc
+        1.0
+        server1:nscp 2> ::nsrpc::nsInit 
+        1
+
+Usage:
+    You can send commands to server running this package. First export the 
+    command you want RPC to execute (this is done on the remote server):
+
+        server1:nscp 3> ::nsrpc::export ns_time
+        1
+
+    Make the call to execute the exported procedure:
+
+        server1:nscp 4> ::nsrpc::call 10.10.0.116:8000 [list ns_time]
+        1178142293
+
+    See the in-line documentation on how to send files and set the per-call
+    timeout flag.
+
+~Enjoy.
