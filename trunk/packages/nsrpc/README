@@ -6,11 +6,30 @@ Installation:
 
 Loading:
     Load the package using ns_itcl and then run the nsInit proc.
-   
+
     server1:nscp 1> ns_ictl package require nsrpc
     1.0
-    server1:nscp 2> ::nsrpc::nsInit 
+    server1:nscp 2> ::nsrpc::nsInit
     1
+
+Alternate Loading:
+    If you have the HEAD version of AOLserver you can use the nsd config
+    to load packages and run the init commands. This feature is unreleased
+    and subject to change:
+
+    ns_section "ns/server/server1/packages"
+        ns_param librarylist [list /user/local/aolserver/lib]
+        ns_param packagelist [list nsrpc]
+
+Configuration:
+    Default values can be overridden with the following nsd config prams:
+
+    ns_section ns/servers/${serverName}/packages/nsrpc
+        ns_param maxthreads 10           ; # The max number of rpc threads.
+        ns_param minthreads 1            ; # The min number of rpc threads.
+        ns_param threadtimeout 60        ; # Time idle before timeout.
+        ns_param maxconns 0              ; # Number of conns before die (0=off).
+        ns_param operationtimeoutms 1000 ; # Total operation timeout in ms.
 
 Usage:
     You can send commands to server running this package. First export the 
