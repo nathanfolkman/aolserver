@@ -8,7 +8,7 @@
 # Usage:
 #     ns_ictl package require nsrpc
 #     ::nsrpc::nsInit
-
+#
 # Requirements:
 #     AOLserver version 4.5 or greater.
 #
@@ -394,7 +394,7 @@ proc ::nsrpc::send {server command responseArrayName {args ""}} {
     ns_log debug "::nsrpc::send: ${server}: ${command}"
 
     if {[catch {$curlhandle perform} errorCode]} {
-        unset $curlhandle
+        $curlhandle cleanup
         error [::nsrpc::getCurlErrorAgf $errorCode]
     }
 
@@ -490,28 +490,28 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
     switch -exact $errorCode {
         3 {
             lappend errorAgf errorString "URL format error"
-            lappend errorAgf errorCode CURL_URL_FORMAT_ERROR
+            lappend errorAgf errorCode URL_FORMAT_ERROR
         }
         6 {
             lappend errorAgf errorString "Could not resolve host"
-            lappend errorAgf errorCode CURL_HOST_RESOLUTION_FAILED
+            lappend errorAgf errorCode HOST_RESOLUTION_FAILED
         }
         7 {
             lappend errorAgf errorString "Failed to connect to host"
-            lappend errorAgf errorCode CURL_HOST_CONNECTION_FAILED
+            lappend errorAgf errorCode HOST_CONNECTION_FAILED
         }
         26 {
             lappend errorAgf errorString "Could not read local file"
-            lappend errorAgf errorCode CURL_LOCAL_FILE_READ_FAILED
+            lappend errorAgf errorCode LOCAL_FILE_READ_FAILED
         }
         28 {
             lappend errorAgf errorString "Operation timeout"
-            lappend errorAgf errorCode CURL_OPERATION_TIMEOUT
+            lappend errorAgf errorCode OPERATION_TIMEOUT
             
         }
         default {
             lappend errorAgf errorString "Untracked RPC failure: ${errorCode}"
-            lappend errorAgf errorCode CURL_UNTRACKED_FAILURE
+            lappend errorAgf errorCode UNTRACKED_FAILURE
         }
     }
     return $errorAgf
