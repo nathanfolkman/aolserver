@@ -1,8 +1,11 @@
 Installation:
+    The default value for INSTALLPATH is /user/local/aolserver/lib. You can
+    override that on the command line if needed.
+
     % make INSTALLPATH=/usr/local/aolserver/lib install
 
 Loading:
-    Load the package using ns_itcl and then run the nsInit proc:
+    Load the package using ns_itcl and then run the nsInit proc.
    
     server1:nscp 1> ns_ictl package require nsrpc
     1.0
