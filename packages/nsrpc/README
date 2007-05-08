@@ -14,7 +14,7 @@ Loading:
 
 Usage:
     You can send commands to server running this package. First export the 
-    command you want RPC to execute (this is done on the remote server):
+    command you want to execute (this is done on the remote server):
 
     server1:nscp 3> ::nsrpc::export ns_time
     1
