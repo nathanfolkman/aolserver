@@ -185,7 +185,7 @@ proc ::nsrpc::stop {} {
 # ::nsrpc::export --
 #
 #     Adds a command to the list of commands that can be executed by 
-#     ::nsrpc::call.
+#     RPC.
 #
 # Arguments:
 #     command: The command to add, E.g. ::foo::barCommand or ns_log
@@ -605,4 +605,62 @@ proc ::nsrpc::setThreadName {} {
         set threadNumber [string trim [lindex $threadNameParts 1] "-"]
         ns_thread name "-rpc:${threadNumber}-"
     }
+}
+
+
+################################################################################
+#
+# ::nsrpc::queue --
+#     Uses the ns_job API to asynchronously send rpc commands.
+#
+# Arguments:
+#     -detached (optional): 
+#         Execues the call in a detached thread that can be waited on.
+#     args: 
+#         See ::nsrpc::call   
+#
+# Results:
+#     Create the nsrpc job queue if not already created. Queues the job.
+#     returns the job id.  The job Id is used to wait on the job.
+#
+# Example: 
+#     ::nsrpc::queue -detached 10.10.0.116:8000 [list ns_log notice foo]
+#
+################################################################################
+proc ::nsrpc::queue {args} {
+    if {![::nsrpc::queueExists]} {
+        ::nsrpc::createQueue
+    }
+
+    lappend command ns_job queue
+
+    if {[set index [lsearch $args -detached]] != -1} {
+        lappend command -detached
+        set args [lreplace $args $index $index]
+    }
+    
+    lappend command nsrpc [concat ::nsrpc::call $args] 
+    ns_log debug "::nsrpc::queue ${command}"
+
+    return [eval $command]
+}
+
+proc ::nsrpc::queueExists {} {
+    if {![nsv_exists nsrpc queueExists]} {
+        return 0
+    }
+    return [nsv_get nsrpc queueExists]
+}
+
+proc ::nsrpc::createQueue {} {
+    ns_job create nsrpc
+    return [nsv_set nsrpc queueExists 1]
+}
+
+proc ::nsrpc::wait {queueId {timout ""}} {
+    return [ns_job wait nsrpc $queueId]
+}
+
+proc ::nsrpc::cancel {queueId} {
+    return [ns_job cancel nsrpc $queueId]
 }
