@@ -12,7 +12,7 @@ Loading:
     server1:nscp 2> ::nsrpc::nsInit
     1
 
-Alternate Loading:
+Alternative Loading:
     If you have the HEAD version of AOLserver you can use the nsd config
     to load packages and run the init commands. This feature is unreleased
     and subject to change:
@@ -45,3 +45,18 @@ Usage:
 
     See the in-line documentation on how to send files and set the per-call
     timeout flag.
+
+Non-blocking Usage:
+    
+    server1:nscp 5> ::nsrpc::queue 10.10.0.116:8000 [list ns_time]
+    job0
+    server1:nscp 6> ::nsrpc::wait job0
+    1178828140
+
+Non-blocking Detached Usage:
+
+    server1:nscp 7> ::nsrpc::queue -detached 10.10.0.116:8000 [list ns_time]
+    job1
+
+    server1:nscp 8> ::nsrpc::wait job1
+    no such job: job1
