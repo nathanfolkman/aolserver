@@ -72,14 +72,14 @@ proc ::nsrpc::nsInit {} {
 # ::nsrpc::start --
 # 
 #     Creates the rpc thread pool; registers the rpc URI to be handled by the
-#     rpc thread pool; registers ::nsrpc::do to the RPC URI.
+#     rpc thread pool; registers ::nsrpc::execute to the RPC URI.
 #
 # Arguments:
 #     args (optional, as flags): -maxthreads -minthreads -timeout -maxconns
 # 
 # Results:
 #     Creates the rpc thread pool; registers the rpc URI to be handled by the
-#     rpc thread pool; registers ::nsrpc::do to the RPC URI; Returns 1
+#     rpc thread pool; registers ::nsrpc::execute to the RPC URI; Returns 1
 #     or error.
 #
 # Comments:
@@ -117,8 +117,8 @@ proc ::nsrpc::start args {
     ns_pools register rpc [ns_info server] GET /rpc/*
     ns_pools register rpc [ns_info server] POST /rpc/*
     
-    ns_register_proc GET /rpc/* ::nsrpc::do
-    ns_register_proc POST /rpc/* ::nsrpc::do
+    ns_register_proc GET /rpc/* ::nsrpc::execute
+    ns_register_proc POST /rpc/* ::nsrpc::execute
 
     nsv_set nsrpc isRunning 1
     ns_log debug "::nsrpc::start: [ns_pools get rpc]"
@@ -160,7 +160,7 @@ proc ::nsrpc::isRunning {} {
 #     None
 #
 # Results:
-#     The ::nsrpc::do proc is unregistered. There is no way to unregister 
+#     The ::nsrpc::execute proc is unregistered. There is no way to unregister 
 #     a thread pool, so the best we can do is set the minthreads to 0 and 
 #     timeout all waiting threads.    
 #
@@ -185,7 +185,7 @@ proc ::nsrpc::stop {} {
 # ::nsrpc::export --
 #
 #     Adds a command to the list of commands that can be executed by 
-#     RPC.
+#     ::nsrpc::call.
 #
 # Arguments:
 #     command: The command to add, E.g. ::foo::barCommand or ns_log
@@ -520,7 +520,7 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
 
 ################################################################################
 #
-# ::nsrpc::do --
+# ::nsrpc::execute --
 #
 #     Evaluates the command sent by ::nsrpc::send. This proc is registerd
 #     by ::nsrpc::start and will handle all requests to /rpc/*
@@ -537,12 +537,12 @@ proc ::nsrpc::getCurlErrorAgf {errorCode} {
 #     ::nsrpc::send
 #
 ################################################################################
-proc ::nsrpc::do {} {
+proc ::nsrpc::execute {} {
     ::nsrpc::setThreadName
     
     if {![llength [set command [ns_queryget command]]]} {
         lappend resultAgf errorString "command not passed"
-        lappend resultAgf errorCode RPC_MISSING_PACKET
+        lappend resultAgf errorCode MISSING_PACKET
         ns_return 500 text/plain $resultAgf
         return
     }
@@ -551,7 +551,7 @@ proc ::nsrpc::do {} {
 
     if {![::nsrpc::isExported $commandName]} {
         lappend resultAgf errorString "command is not exported: ${commandName}"
-        lappend resultAgf errorCode RPC_COMMAND_NOT_EXPORTED 
+        lappend resultAgf errorCode COMMAND_NOT_EXPORTED 
         ns_return 500 text/plain $resultAgf
         return
     }
@@ -561,7 +561,7 @@ proc ::nsrpc::do {} {
             
         if {[set index [lsearch -exact $command $arg]] == -1} {
             lappend resultAgf errorString "invalid file arg: ${arg}"
-            lappend resultAgf errorCode RPC_INVALID_FILE_ARGUMENT 
+            lappend resultAgf errorCode INVALID_FILE_ARGUMENT 
             ns_return 500 text/plain $resultAgf
             return
         }
@@ -569,7 +569,7 @@ proc ::nsrpc::do {} {
         set command [lreplace $command $index $index $tmpFile]
     }
 
-    ns_log debug "::nsrpc::do: ${command}"
+    ns_log debug "::nsrpc::execute: ${command}"
 
     if {[catch {set result [eval $command]} error]} {
         lappend resultAgf errorString $error
