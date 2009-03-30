@@ -132,7 +132,7 @@ Tcljson_Init(Tcl_Interp *interp)
 static int
 TcljsonNewObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
-    struct json_object *jsonPtr;
+    struct json_object *jsonPtr = NULL;
     Tcl_Obj *objPtr;
     char *stringVal;
     double doubleVal;  
