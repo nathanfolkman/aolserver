@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 
 #include "tcl.h"
 #include "json.h"
@@ -35,7 +35,6 @@ static void
 TcljsonObjFree(Tcl_Obj *objPtr)
 {
     TclJsonObject *tsPtr = (TclJsonObject *) objPtr->internalRep.otherValuePtr;
-    /* json_object_put(tsPtr->joPtr); */
     Tcl_Free((char *)tsPtr);
 }
 
@@ -115,6 +114,7 @@ Tcljson_Init(Tcl_Interp *interp)
     Tcl_RegisterObjType(&tclJsonObjectType);
 
     Tcl_CreateObjCommand(interp, "json.newObject", TcljsonNewObjectObjCmd, (ClientData) 'o', NULL);
+    Tcl_CreateObjCommand(interp, "json.putObject", TcljsonNewObjectObjCmd, (ClientData) 'p', NULL);
     Tcl_CreateObjCommand(interp, "json.newInt", TcljsonNewObjectObjCmd, (ClientData) 'i', NULL);
     Tcl_CreateObjCommand(interp, "json.newString", TcljsonNewObjectObjCmd, (ClientData) 's', NULL);
     Tcl_CreateObjCommand(interp, "json.newDouble", TcljsonNewObjectObjCmd, (ClientData) 'd', NULL);
@@ -147,6 +147,18 @@ TcljsonNewObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_
 
         break;
 
+    case 'p':
+        if (objc != 2) {
+            Tcl_WrongNumArgs(interp, 1, objv, "object");
+            return TCL_ERROR;
+        }
+        if (Tcljson_JsonObjFromTclObj(interp, objv[1], &jsonPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
+        objPtr = objv[1];
+        json_object_put(jsonPtr);
+
+        break;
     case 'i':
         if (objc != 2) {
             Tcl_WrongNumArgs(interp, 1, objv, "int");
@@ -334,11 +346,11 @@ TcljsonObjectToArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, 
 
     var = Tcl_GetStringFromObj(objv[2], &len);
 
-    printf("obj: %p, var: %s\n", jsonObj, var);
+    //printf("obj: %p, var: %s\n", jsonObj, var);
 
     json_object_object_foreach(jsonObj, key, value) {
         Tcl_SetVar2(interp, var, key, json_object_to_json_string(value), TCL_LEAVE_ERR_MSG);
-        printf("a: %s, b: %s", key, json_object_to_json_string(value));
+        //printf("a: %s, b: %s", key, json_object_to_json_string(value));
     }
 
     return TCL_OK;
