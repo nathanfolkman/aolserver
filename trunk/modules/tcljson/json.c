@@ -306,8 +306,7 @@ TcljsonObjectToStringObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
 static int
 TcljsonStringToObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
-    struct json_object *jsonObj;
-    char buf[16];
+    struct json_object *jsonPtr = NULL;
     char *string;
     int len;
     Tcl_Obj *objPtr;
@@ -318,11 +317,17 @@ TcljsonStringToObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     }
 
     string = Tcl_GetStringFromObj(objv[1], &len);
+    jsonPtr = json_tokener_parse(string);
 
-    jsonObj = json_tokener_parse(string);
+	if (jsonPtr == 0xfffffffffffffffc) {
+		Tcl_SetResult(interp, "could not parse json string.", TCL_STATIC);
+		return TCL_ERROR;
+	}
 
-    len = sprintf(buf, "%p", jsonObj);
-    objPtr = Tcl_NewStringObj(buf, strlen(buf));
+	if (Tcljson_JsonObjToTclObj(jsonPtr, &objPtr) != TCL_OK) {
+        Tcl_SetResult(interp, "failed to convert json object to tcl object.", TCL_STATIC);
+        return TCL_ERROR;
+    }
 
     Tcl_SetObjResult(interp, objPtr);
 
