@@ -11,10 +11,11 @@ extern int Tcljson_JsonObjFromTclObj(Tcl_Interp *interp, Tcl_Obj *objPtr, struct
 extern int Tcljson_TclObjIsJsonObj(Tcl_Obj *objPtr);
 
 static Tcl_ObjCmdProc TcljsonNewObjectObjCmd;
+static Tcl_ObjCmdProc TcljsonGetObjectObjCmd;
+static Tcl_ObjCmdProc TcljsonGetArrayObjCmd;
 static Tcl_ObjCmdProc TcljsonAddObjectObjCmd;
 static Tcl_ObjCmdProc TcljsonObjectToStringObjCmd;
 static Tcl_ObjCmdProc TcljsonStringToObjectObjCmd;
-static Tcl_ObjCmdProc TcljsonObjectToArrayObjCmd;
 
 static void TcljsonObjFree(Tcl_Obj *objPtr);
 static void TcljsonObjUpdateStr(Tcl_Obj *objPtr);
@@ -86,6 +87,13 @@ int
 Tcljson_JsonObjFromTclObj(Tcl_Interp *interp, Tcl_Obj *objPtr, struct json_object **joPtrPtr)
 {
     TclJsonObject *tjPtr;
+    
+    if (objPtr->typePtr == NULL) {
+        if (interp != NULL) {
+            Tcl_SetResult(interp, "invalid json object", TCL_STATIC);
+        }
+        return TCL_ERROR;
+    }
 
     if (Tcljson_TclObjIsJsonObj(objPtr) != 1) {
         if (Tcl_ConvertToType(interp, objPtr, &tclJsonObjectType) != TCL_OK) {
@@ -120,11 +128,12 @@ Tcljson_Init(Tcl_Interp *interp)
     Tcl_CreateObjCommand(interp, "json.newDouble", TcljsonNewObjectObjCmd, (ClientData) 'd', NULL);
     Tcl_CreateObjCommand(interp, "json.newBoolean", TcljsonNewObjectObjCmd, (ClientData) 'b', NULL);
     Tcl_CreateObjCommand(interp, "json.newArray", TcljsonNewObjectObjCmd, (ClientData) 'a', NULL);
+    Tcl_CreateObjCommand(interp, "json.getObject", TcljsonGetObjectObjCmd, (ClientData) NULL, NULL);
+    Tcl_CreateObjCommand(interp, "json.getArray", TcljsonGetArrayObjCmd, (ClientData) NULL, NULL);
     Tcl_CreateObjCommand(interp, "json.objectAddObject", TcljsonAddObjectObjCmd, (ClientData) 'o', NULL);
     Tcl_CreateObjCommand(interp, "json.arrayAddObject", TcljsonAddObjectObjCmd, (ClientData) 'a', NULL);
     Tcl_CreateObjCommand(interp, "json.objectToString", TcljsonObjectToStringObjCmd, NULL, NULL);
     Tcl_CreateObjCommand(interp, "json.stringToObject", TcljsonStringToObjectObjCmd, NULL, NULL);
-    Tcl_CreateObjCommand(interp, "json.objectToArray", TcljsonObjectToArrayObjCmd, NULL, NULL);
 
     return TCL_OK;
 }
@@ -227,9 +236,98 @@ TcljsonNewObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_
 }
 
 static int
+TcljsonGetArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+{
+    struct json_object *jsonPtr = NULL;
+    struct json_object *jsonPtr2 = NULL;
+    enum json_type type;
+    Tcl_Obj *objPtr;
+    Tcl_Obj *objPtr2;
+    int i;
+    
+    if (objc != 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "array");
+        return TCL_ERROR;
+    }
+    
+    if (Tcljson_JsonObjFromTclObj(interp, objv[1], &jsonPtr) != TCL_OK) {
+        return TCL_ERROR;
+    }
+    
+    objPtr = Tcl_NewListObj(0, NULL);
+    
+    for(i=0; i < json_object_array_length(jsonPtr); i++) {
+        jsonPtr2 = json_object_array_get_idx(jsonPtr, i);
+        type = json_object_get_type(jsonPtr2);
+        
+        if (type == json_type_array) {
+            if (Tcljson_JsonObjToTclObj(jsonPtr2, &objPtr2) != TCL_OK) {
+                Tcl_SetResult(interp, "failed to convert json object to tcl object.", TCL_STATIC);
+                return TCL_ERROR;
+            }
+        } else {
+            objPtr2 = Tcl_NewStringObj(json_object_to_json_string(jsonPtr2), -1);
+        }
+        
+        Tcl_ListObjAppendElement(interp, objPtr, objPtr2);
+    }
+    
+    Tcl_SetObjResult(interp, objPtr);
+
+    return TCL_OK;
+}
+
+static int
+TcljsonGetObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+{
+    struct json_object *jsonPtr = NULL;
+    enum json_type type;
+    Tcl_Obj *objPtr;
+    char *key;
+    int len, found;
+   
+    if (objc != 3) {
+        Tcl_WrongNumArgs(interp, 1, objv, "object key");
+        return TCL_ERROR;
+    }
+    
+    if (Tcljson_JsonObjFromTclObj(interp, objv[1], &jsonPtr) != TCL_OK) {
+        return TCL_ERROR;
+    }
+   
+    key = Tcl_GetStringFromObj(objv[2], &len);
+    found = 0;
+    json_object_object_foreach(jsonPtr, key2, value2) {
+        if (strcmp(key, key2) == 0) {
+            type = json_object_get_type(value2);
+            found = 1;
+            
+            if (type == json_type_array) {
+                if (Tcljson_JsonObjToTclObj(value2, &objPtr) != TCL_OK) {
+                    Tcl_SetResult(interp, "failed to convert json object to tcl object.", TCL_STATIC);
+                    return TCL_ERROR;
+                }
+            } else {
+                objPtr = Tcl_NewStringObj(json_object_to_json_string(value2), -1);
+            }
+            
+            break;
+        }
+    }
+    
+    if (!found) {
+        Tcl_SetResult(interp, "invalid key", TCL_STATIC);
+        return TCL_ERROR;
+    }
+  
+    Tcl_SetObjResult(interp, objPtr);
+
+    return TCL_OK;
+}
+
+static int
 TcljsonAddObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
-    
     struct json_object *jsonObj_1;
     struct json_object *jsonObj_2;
     char *key;
@@ -285,7 +383,6 @@ TcljsonObjectToStringObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     struct json_object *jsonObj;
     char *string;
     Tcl_Obj *objPtr;
-    int len;
 
     if (objc != 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "object");
@@ -330,33 +427,6 @@ TcljsonStringToObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     }
 
     Tcl_SetObjResult(interp, objPtr);
-
-    return TCL_OK;
-}
-
-static int
-TcljsonObjectToArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
-{
-    struct json_object *jsonObj;
-    char *var;
-    int len;
-
-    if (objc != 3) {
-        Tcl_WrongNumArgs(interp, 1, objv, "object varName");
-        return TCL_ERROR;
-    }
-    if (Tcljson_JsonObjFromTclObj(interp, objv[1], &jsonObj) != TCL_OK) {
-        return TCL_ERROR;
-    }
-
-    var = Tcl_GetStringFromObj(objv[2], &len);
-
-    //printf("obj: %p, var: %s\n", jsonObj, var);
-
-    json_object_object_foreach(jsonObj, key, value) {
-        Tcl_SetVar2(interp, var, key, json_object_to_json_string(value), TCL_LEAVE_ERR_MSG);
-        //printf("a: %s, b: %s", key, json_object_to_json_string(value));
-    }
 
     return TCL_OK;
 }
