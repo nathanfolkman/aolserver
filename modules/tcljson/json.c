@@ -13,6 +13,7 @@ extern Tcl_Obj* Tcljson_TclObjFromJsonObj(struct json_object *joPtr);
 
 static Tcl_ObjCmdProc TcljsonNewObjectObjCmd;
 static Tcl_ObjCmdProc TcljsonGetObjectObjCmd;
+static Tcl_ObjCmdProc TcljsonKeysObjectObjCmd;
 static Tcl_ObjCmdProc TcljsonGetArrayObjCmd;
 static Tcl_ObjCmdProc TcljsonAddObjectObjCmd;
 static Tcl_ObjCmdProc TcljsonObjectToStringObjCmd;
@@ -165,6 +166,7 @@ Tcljson_Init(Tcl_Interp *interp)
     Tcl_CreateObjCommand(interp, "json.newBoolean", TcljsonNewObjectObjCmd, (ClientData) 'b', NULL);
     Tcl_CreateObjCommand(interp, "json.newArray", TcljsonNewObjectObjCmd, (ClientData) 'a', NULL);
     Tcl_CreateObjCommand(interp, "json.getObject", TcljsonGetObjectObjCmd, (ClientData) NULL, NULL);
+    Tcl_CreateObjCommand(interp, "json.getObjectKeys", TcljsonKeysObjectObjCmd, (ClientData) NULL, NULL);
     Tcl_CreateObjCommand(interp, "json.getArray", TcljsonGetArrayObjCmd, (ClientData) NULL, NULL);
     Tcl_CreateObjCommand(interp, "json.objectAddObject", TcljsonAddObjectObjCmd, (ClientData) 'o', NULL);
     Tcl_CreateObjCommand(interp, "json.arrayAddObject", TcljsonAddObjectObjCmd, (ClientData) 'a', NULL);
@@ -291,7 +293,7 @@ TcljsonGetArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
     
     objPtr = Tcl_NewListObj(0, NULL);
     
-    for(i=0; i < json_object_array_length(jsonPtr); i++) {
+    for (i=0; i < json_object_array_length(jsonPtr); i++) {
         jsonPtr2 = json_object_array_get_idx(jsonPtr, i);
         objPtr2 = Tcljson_TclObjFromJsonObj(jsonPtr2);
         Tcl_ListObjAppendElement(interp, objPtr, objPtr2);
@@ -303,10 +305,35 @@ TcljsonGetArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
 }
 
 static int
+TcljsonKeysObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+{
+    struct json_object *jsonPtr = NULL;
+    Tcl_Obj *objPtr;
+       
+    if (objc != 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "object");
+        return TCL_ERROR;
+    }
+    
+    if (Tcljson_JsonObjFromTclObj(interp, objv[1], &jsonPtr) != TCL_OK) {
+        return TCL_ERROR;
+    }
+    
+    objPtr = Tcl_NewListObj(0, NULL);
+    
+    json_object_object_foreach(jsonPtr, key, value) {
+        Tcl_ListObjAppendElement(interp, objPtr, Tcl_NewStringObj(key, -1));
+    }
+    
+    Tcl_SetObjResult(interp, objPtr);
+
+    return TCL_OK;
+}
+
+static int
 TcljsonGetObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
 {
     struct json_object *jsonPtr = NULL;
-    enum json_type type;
     Tcl_Obj *objPtr;
     char *key;
     int len, found;
