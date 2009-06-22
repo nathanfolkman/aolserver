@@ -302,7 +302,7 @@ TcljsonGetObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_
             type = json_object_get_type(value2);
             found = 1;
             
-            if (type == json_type_array) {
+            if (type == json_type_array || type == json_type_object) {
                 if (Tcljson_JsonObjToTclObj(value2, &objPtr) != TCL_OK) {
                     Tcl_SetResult(interp, "failed to convert json object to tcl object.", TCL_STATIC);
                     return TCL_ERROR;
