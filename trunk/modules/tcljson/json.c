@@ -9,6 +9,7 @@ extern int Tcljson_Init(Tcl_Interp *interp);
 extern int Tcljson_JsonObjToTclObj(struct json_object *joPtr, Tcl_Obj **objPtr);
 extern int Tcljson_JsonObjFromTclObj(Tcl_Interp *interp, Tcl_Obj *objPtr, struct json_object **joPtrPtr);
 extern int Tcljson_TclObjIsJsonObj(Tcl_Obj *objPtr);
+extern Tcl_Obj* Tcljson_TclObjFromJsonObj(struct json_object *joPtr);
 
 static Tcl_ObjCmdProc TcljsonNewObjectObjCmd;
 static Tcl_ObjCmdProc TcljsonGetObjectObjCmd;
@@ -81,6 +82,41 @@ Tcljson_JsonObjToTclObj(struct json_object *joPtr, Tcl_Obj **objPtr)
     Tcl_InvalidateStringRep(*objPtr);
 
     return TCL_OK;
+}
+
+Tcl_Obj *
+Tcljson_TclObjFromJsonObj(struct json_object *joPtr)
+{
+    Tcl_Obj *objPtr;
+    enum json_type type;
+    
+    type = json_object_get_type(joPtr);
+    
+    switch (type) {
+    case json_type_string:
+        objPtr = Tcl_NewStringObj(json_object_get_string(joPtr), -1);
+        break;
+    case json_type_int:
+        objPtr = Tcl_NewIntObj(json_object_get_int(joPtr));
+        break;
+    case json_type_double:
+        objPtr = Tcl_NewLongObj(json_object_get_double(joPtr));
+        break;
+    case json_type_boolean:
+        objPtr = Tcl_NewBooleanObj(json_object_get_boolean(joPtr));
+        break;
+    case json_type_object:
+        Tcljson_JsonObjToTclObj(joPtr, &objPtr);
+        break;
+    case json_type_array:
+        Tcljson_JsonObjToTclObj(joPtr, &objPtr);
+        break;
+    default:
+        objPtr = Tcl_NewStringObj(json_object_to_json_string(joPtr), -1);
+        break;
+    }
+    
+    return objPtr;
 }
 
 int
@@ -240,7 +276,6 @@ TcljsonGetArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
 {
     struct json_object *jsonPtr = NULL;
     struct json_object *jsonPtr2 = NULL;
-    enum json_type type;
     Tcl_Obj *objPtr;
     Tcl_Obj *objPtr2;
     int i;
@@ -258,17 +293,7 @@ TcljsonGetArrayObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_O
     
     for(i=0; i < json_object_array_length(jsonPtr); i++) {
         jsonPtr2 = json_object_array_get_idx(jsonPtr, i);
-        type = json_object_get_type(jsonPtr2);
-        
-        if (type == json_type_array) {
-            if (Tcljson_JsonObjToTclObj(jsonPtr2, &objPtr2) != TCL_OK) {
-                Tcl_SetResult(interp, "failed to convert json object to tcl object.", TCL_STATIC);
-                return TCL_ERROR;
-            }
-        } else {
-            objPtr2 = Tcl_NewStringObj(json_object_to_json_string(jsonPtr2), -1);
-        }
-        
+        objPtr2 = Tcljson_TclObjFromJsonObj(jsonPtr2);
         Tcl_ListObjAppendElement(interp, objPtr, objPtr2);
     }
     
@@ -299,18 +324,8 @@ TcljsonGetObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_
     found = 0;
     json_object_object_foreach(jsonPtr, key2, value2) {
         if (strcmp(key, key2) == 0) {
-            type = json_object_get_type(value2);
             found = 1;
-            
-            if (type == json_type_array || type == json_type_object) {
-                if (Tcljson_JsonObjToTclObj(value2, &objPtr) != TCL_OK) {
-                    Tcl_SetResult(interp, "failed to convert json object to tcl object.", TCL_STATIC);
-                    return TCL_ERROR;
-                }
-            } else {
-                objPtr = Tcl_NewStringObj(json_object_to_json_string(value2), -1);
-            }
-            
+            objPtr = Tcljson_TclObjFromJsonObj(value2);
             break;
         }
     }
