@@ -6,6 +6,7 @@
 #include "json.h"
 
 extern int Tcljson_Init(Tcl_Interp *interp);
+extern int Tcljson_SafeInit(Tcl_Interp *interp);
 extern int Tcljson_JsonObjToTclObj(struct json_object *joPtr, Tcl_Obj **objPtr);
 extern int Tcljson_JsonObjFromTclObj(Tcl_Interp *interp, Tcl_Obj *objPtr, struct json_object **joPtrPtr);
 extern int Tcljson_TclObjIsJsonObj(Tcl_Obj *objPtr);
@@ -151,6 +152,12 @@ int
 Tcljson_TclObjIsJsonObj(Tcl_Obj *objPtr)
 {
     return (objPtr->typePtr == &tclJsonObjectType);
+}
+
+int
+Tcljson_SafeInit(Tcl_Interp *interp)
+{
+    return Tcljson_Init(interp);
 }
 
 int
