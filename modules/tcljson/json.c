@@ -39,6 +39,7 @@ static void
 TcljsonObjFree(Tcl_Obj *objPtr)
 {
     TclJsonObject *tsPtr = (TclJsonObject *) objPtr->internalRep.otherValuePtr;
+    if (objPtr->bytes) ckfree(objPtr->bytes);
     Tcl_Free((char *)tsPtr);
 }
 
@@ -56,16 +57,17 @@ TcljsonObjUpdateStr(Tcl_Obj *objPtr)
     };
     int len;
     enum json_type type;
-    char buf[32];
+    char buf[32], *json;
     TclJsonObject *tjPtr;
 
     tjPtr = (TclJsonObject *) objPtr->internalRep.otherValuePtr;
     type = json_object_get_type(tjPtr->joPtr);
     snprintf(buf, 31, "JSON_OBJECT:%s(%p)", jsonTypeArr[type], tjPtr->joPtr);
+    json = json_object_get_string(tjPtr->joPtr);
 
-    len = strlen(buf);
+    len = strlen(json);
     objPtr->bytes = ckalloc(len + 1);
-    strcpy(objPtr->bytes, buf);
+    strcpy(objPtr->bytes, json);
     objPtr->length = strlen(objPtr->bytes);
 }
 
@@ -79,6 +81,7 @@ Tcljson_JsonObjToTclObj(struct json_object *joPtr, Tcl_Obj **objPtr)
     tjPtr->joPtr = joPtr;
 
     *objPtr = Tcl_NewObj();
+
     (*objPtr)->internalRep.otherValuePtr = (VOID *) tjPtr;
     (*objPtr)->typePtr = &tclJsonObjectType;
     Tcl_InvalidateStringRep(*objPtr);
