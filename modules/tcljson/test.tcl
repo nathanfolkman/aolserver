@@ -1,7 +1,10 @@
-#load libtcljson.so
+load libtcljson.so
 
+puts "running json tests"
+puts "---------------------"
 set a [json.newArray]
 
+puts "test encode and decode"
 set s_1 [json.newString "one"]
 set s_2 [json.newString "two"]
 set s_3 [json.newString "three"]
@@ -27,6 +30,20 @@ puts [json.objectToString $o]
 
 set string "\{ \"int\": 100, \"double\": 100000.000000, \"string\": \"Hello World!\", \"boolean\": false, \"array\": \[ \"one\", \"two\", \"three\" \] \}"
 
-#set o_2 [json.stringToObject $string]
-
-#puts [json.objectToString $o_2]
+set o_2 [json.stringToObject $string]
+puts [json.objectToString $o_2]
+puts "encode/decode successful"
+puts "---------------------"
+# null value json crash bug test
+puts "test null data\n"
+set data "{'a':null}"
+if [catch {
+    set o [json.stringToObject $data]
+    set a [json.getObject $o "a"]
+} err] {
+    puts "Yuck, failed null test: $err"
+} else {
+    puts $a
+    puts "null test successful"
+}
+puts "---------------------"
