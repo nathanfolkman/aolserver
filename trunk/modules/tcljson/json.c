@@ -91,6 +91,12 @@ Tcljson_TclObjFromJsonObj(struct json_object *joPtr)
 {
     Tcl_Obj *objPtr;
     enum json_type type;
+    char *def = NULL;
+
+    if (joPtr == NULL) {
+        objPtr = Tcl_NewStringObj(&def, -1);
+        return objPtr;
+    }
     
     type = json_object_get_type(joPtr);
     
