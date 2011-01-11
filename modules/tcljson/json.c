@@ -471,7 +471,7 @@ TcljsonStringToObjectObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     string = Tcl_GetStringFromObj(objv[1], &len);
     jsonPtr = json_tokener_parse(string);
 
-	if (jsonPtr == 0xfffffffffffffffc) {
+	if (jsonPtr == 0xfffffffffffffffc || jsonPtr == NULL) {
 		Tcl_SetResult(interp, "could not parse json string.", TCL_STATIC);
 		return TCL_ERROR;
 	}
